@@ -8,3 +8,43 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface AnalyzeImageRequest {
+  /** Base64-encoded image data */
+  imageData: string;
+  /** MIME type of the image (e.g. image/jpeg, image/png, image/webp, image/gif) */
+  mimeType: string;
+}
+
+/**
+ * Technical observations about the image
+ */
+export type AnalyzeImageResponseTechnicalDetails = {
+  composition: string;
+  lighting: string;
+  quality: string;
+};
+
+export interface AnalyzeImageResponse {
+  /** A concise summary of what the image depicts */
+  summary: string;
+  /** Main subjects or objects visible in the image */
+  subjects: string[];
+  /** The environment or setting of the image */
+  setting: string;
+  /** Dominant colors in the image */
+  colors: string[];
+  /** Overall mood or tone of the image */
+  mood: string;
+  /** Any readable text visible in the image, or empty string if none */
+  text_content: string;
+  /** Relevant descriptive tags for the image */
+  tags: string[];
+  /** Technical observations about the image */
+  technical_details: AnalyzeImageResponseTechnicalDetails;
+}
+
+export interface ErrorResponse {
+  error: string;
+  details?: string;
+}

@@ -6,4 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./analyzeImageRequest";
+export * from "./analyzeImageResponse";
+export * from "./analyzeImageResponseTechnicalDetails";
+export * from "./errorResponse";
 export * from "./healthStatus";

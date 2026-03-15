@@ -5,18 +5,26 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
+  MutationFunction,
   QueryFunction,
   QueryKey,
+  UseMutationOptions,
+  UseMutationResult,
   UseQueryOptions,
   UseQueryResult,
 } from "@tanstack/react-query";
 
-import type { HealthStatus } from "./api.schemas";
+import type {
+  AnalyzeImageRequest,
+  AnalyzeImageResponse,
+  ErrorResponse,
+  HealthStatus,
+} from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
-import type { ErrorType } from "../custom-fetch";
+import type { ErrorType, BodyType } from "../custom-fetch";
 
 type AwaitedInput<T> = PromiseLike<T> | T;
 
@@ -99,3 +107,90 @@ export function useHealthCheck<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * Receives a base64 image and returns structured context extracted by Claude
+ * @summary Analyze an image
+ */
+export const getAnalyzeImageUrl = () => {
+  return `/api/analyze`;
+};
+
+export const analyzeImage = async (
+  analyzeImageRequest: AnalyzeImageRequest,
+  options?: RequestInit,
+): Promise<AnalyzeImageResponse> => {
+  return customFetch<AnalyzeImageResponse>(getAnalyzeImageUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(analyzeImageRequest),
+  });
+};
+
+export const getAnalyzeImageMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof analyzeImage>>,
+    TError,
+    { data: BodyType<AnalyzeImageRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof analyzeImage>>,
+  TError,
+  { data: BodyType<AnalyzeImageRequest> },
+  TContext
+> => {
+  const mutationKey = ["analyzeImage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof analyzeImage>>,
+    { data: BodyType<AnalyzeImageRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return analyzeImage(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AnalyzeImageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof analyzeImage>>
+>;
+export type AnalyzeImageMutationBody = BodyType<AnalyzeImageRequest>;
+export type AnalyzeImageMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Analyze an image
+ */
+export const useAnalyzeImage = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof analyzeImage>>,
+    TError,
+    { data: BodyType<AnalyzeImageRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof analyzeImage>>,
+  TError,
+  { data: BodyType<AnalyzeImageRequest> },
+  TContext
+> => {
+  return useMutation(getAnalyzeImageMutationOptions(options));
+};

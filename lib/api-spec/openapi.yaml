@@ -1,6 +1,5 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
   description: API specification
@@ -10,6 +9,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: analyze
+    description: Image analysis operations
 paths:
   /healthz:
     get:
@@ -24,6 +25,37 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /analyze:
+    post:
+      operationId: analyzeImage
+      tags: [analyze]
+      summary: Analyze an image
+      description: Receives a base64 image and returns structured context extracted by Claude
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeImageRequest"
+      responses:
+        "200":
+          description: Structured context extracted from the image
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeImageResponse"
+        "400":
+          description: Bad request (unsupported file type, missing image, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error or AI API failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +65,77 @@ components:
           type: string
       required:
         - status
-
+    AnalyzeImageRequest:
+      type: object
+      properties:
+        imageData:
+          type: string
+          description: Base64-encoded image data
+        mimeType:
+          type: string
+          description: MIME type of the image (e.g. image/jpeg, image/png, image/webp, image/gif)
+      required:
+        - imageData
+        - mimeType
+    AnalyzeImageResponse:
+      type: object
+      properties:
+        summary:
+          type: string
+          description: A concise summary of what the image depicts
+        subjects:
+          type: array
+          items:
+            type: string
+          description: Main subjects or objects visible in the image
+        setting:
+          type: string
+          description: The environment or setting of the image
+        colors:
+          type: array
+          items:
+            type: string
+          description: Dominant colors in the image
+        mood:
+          type: string
+          description: Overall mood or tone of the image
+        text_content:
+          type: string
+          description: Any readable text visible in the image, or empty string if none
+        tags:
+          type: array
+          items:
+            type: string
+          description: Relevant descriptive tags for the image
+        technical_details:
+          type: object
+          description: Technical observations about the image
+          properties:
+            composition:
+              type: string
+            lighting:
+              type: string
+            quality:
+              type: string
+          required:
+            - composition
+            - lighting
+            - quality
+      required:
+        - summary
+        - subjects
+        - setting
+        - colors
+        - mood
+        - text_content
+        - tags
+        - technical_details
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        details:
+          type: string
+      required:
+        - error

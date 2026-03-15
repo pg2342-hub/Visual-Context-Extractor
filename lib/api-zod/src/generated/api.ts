@@ -14,3 +14,41 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * Receives a base64 image and returns structured context extracted by Claude
+ * @summary Analyze an image
+ */
+export const AnalyzeImageBody = zod.object({
+  imageData: zod.string().describe("Base64-encoded image data"),
+  mimeType: zod
+    .string()
+    .describe(
+      "MIME type of the image (e.g. image\/jpeg, image\/png, image\/webp, image\/gif)",
+    ),
+});
+
+export const AnalyzeImageResponse = zod.object({
+  summary: zod.string().describe("A concise summary of what the image depicts"),
+  subjects: zod
+    .array(zod.string())
+    .describe("Main subjects or objects visible in the image"),
+  setting: zod.string().describe("The environment or setting of the image"),
+  colors: zod.array(zod.string()).describe("Dominant colors in the image"),
+  mood: zod.string().describe("Overall mood or tone of the image"),
+  text_content: zod
+    .string()
+    .describe(
+      "Any readable text visible in the image, or empty string if none",
+    ),
+  tags: zod
+    .array(zod.string())
+    .describe("Relevant descriptive tags for the image"),
+  technical_details: zod
+    .object({
+      composition: zod.string(),
+      lighting: zod.string(),
+      quality: zod.string(),
+    })
+    .describe("Technical observations about the image"),
+});

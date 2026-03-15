@@ -1,0 +1,12 @@
+packages:
+  "react-dropzone": "For drag-and-drop file uploading"
+  "framer-motion": "For smooth reveal animations of the analysis results"
+  "clsx": "For conditional class name joining"
+  "tailwind-merge": "For merging tailwind classes safely"
+  "lucide-react": "For beautiful crisp icons"
+
+images: []
+
+notes:
+  - "Using plain fetch wrapped in React Query's useMutation for the /api/analyze endpoint due to the large base64 payload requirement."
+  - "Assuming @workspace/api-client-react/src/generated/api.schemas is accessible for type definitions."
