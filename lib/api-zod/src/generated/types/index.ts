@@ -7,7 +7,10 @@
  */
 
 export * from "./analyzeImageRequest";
+export * from "./analyzeImageRequestMode";
 export * from "./analyzeImageResponse";
+export * from "./analyzeImageResponseModeResult";
 export * from "./analyzeImageResponseTechnicalDetails";
 export * from "./errorResponse";
 export * from "./healthStatus";
+export * from "./imageInput";

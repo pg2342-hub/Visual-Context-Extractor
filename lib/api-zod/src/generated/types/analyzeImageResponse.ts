@@ -5,23 +5,18 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AnalyzeImageResponseModeResult } from "./analyzeImageResponseModeResult";
 import type { AnalyzeImageResponseTechnicalDetails } from "./analyzeImageResponseTechnicalDetails";
 
 export interface AnalyzeImageResponse {
-  /** A concise summary of what the image depicts */
+  /** A concise summary of what the image(s) depict */
   summary: string;
-  /** Main subjects or objects visible in the image */
-  subjects: string[];
-  /** The environment or setting of the image */
-  setting: string;
-  /** Dominant colors in the image */
-  colors: string[];
-  /** Overall mood or tone of the image */
-  mood: string;
-  /** Any readable text visible in the image, or empty string if none */
+  /** Any readable text visible in the image(s), or empty string if none */
   text_content: string;
-  /** Relevant descriptive tags for the image */
+  /** Relevant descriptive tags */
   tags: string[];
-  /** Technical observations about the image */
+  /** Technical observations about the image(s) */
   technical_details: AnalyzeImageResponseTechnicalDetails;
+  /** Mode-specific structured output */
+  mode_result: AnalyzeImageResponseModeResult;
 }

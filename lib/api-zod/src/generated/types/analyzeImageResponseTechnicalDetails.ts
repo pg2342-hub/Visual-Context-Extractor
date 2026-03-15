@@ -7,7 +7,7 @@
  */
 
 /**
- * Technical observations about the image
+ * Technical observations about the image(s)
  */
 export type AnalyzeImageResponseTechnicalDetails = {
   composition: string;

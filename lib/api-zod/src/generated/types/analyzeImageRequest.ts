@@ -5,10 +5,15 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AnalyzeImageRequestMode } from "./analyzeImageRequestMode";
+import type { ImageInput } from "./imageInput";
 
 export interface AnalyzeImageRequest {
-  /** Base64-encoded image data */
-  imageData: string;
-  /** MIME type of the image (e.g. image/jpeg, image/png, image/webp, image/gif) */
-  mimeType: string;
+  /**
+   * One or more images to analyze
+   * @minItems 1
+   */
+  images: ImageInput[];
+  /** The type of context extraction to perform */
+  mode: AnalyzeImageRequestMode;
 }

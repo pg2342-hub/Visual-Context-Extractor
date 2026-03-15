@@ -109,8 +109,8 @@ export function useHealthCheck<
 }
 
 /**
- * Receives a base64 image and returns structured context extracted by Claude
- * @summary Analyze an image
+ * Receives base64 images and an extraction mode, returns structured context via Claude
+ * @summary Analyze one or more images
  */
 export const getAnalyzeImageUrl = () => {
   return `/api/analyze`;
@@ -173,7 +173,7 @@ export type AnalyzeImageMutationBody = BodyType<AnalyzeImageRequest>;
 export type AnalyzeImageMutationError = ErrorType<ErrorResponse>;
 
 /**
- * @summary Analyze an image
+ * @summary Analyze one or more images
  */
 export const useAnalyzeImage = <
   TError = ErrorType<ErrorResponse>,

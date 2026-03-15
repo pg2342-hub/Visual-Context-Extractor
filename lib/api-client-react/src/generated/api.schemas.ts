@@ -9,15 +9,38 @@ export interface HealthStatus {
   status: string;
 }
 
-export interface AnalyzeImageRequest {
+export interface ImageInput {
   /** Base64-encoded image data */
   imageData: string;
-  /** MIME type of the image (e.g. image/jpeg, image/png, image/webp, image/gif) */
+  /** MIME type of the image */
   mimeType: string;
 }
 
 /**
- * Technical observations about the image
+ * The type of context extraction to perform
+ */
+export type AnalyzeImageRequestMode =
+  (typeof AnalyzeImageRequestMode)[keyof typeof AnalyzeImageRequestMode];
+
+export const AnalyzeImageRequestMode = {
+  summarize: "summarize",
+  extract_data_points: "extract_data_points",
+  identify_ui_elements: "identify_ui_elements",
+  describe_code: "describe_code",
+} as const;
+
+export interface AnalyzeImageRequest {
+  /**
+   * One or more images to analyze
+   * @minItems 1
+   */
+  images: ImageInput[];
+  /** The type of context extraction to perform */
+  mode: AnalyzeImageRequestMode;
+}
+
+/**
+ * Technical observations about the image(s)
  */
 export type AnalyzeImageResponseTechnicalDetails = {
   composition: string;
@@ -25,23 +48,22 @@ export type AnalyzeImageResponseTechnicalDetails = {
   quality: string;
 };
 
+/**
+ * Mode-specific structured output
+ */
+export type AnalyzeImageResponseModeResult = { [key: string]: unknown };
+
 export interface AnalyzeImageResponse {
-  /** A concise summary of what the image depicts */
+  /** A concise summary of what the image(s) depict */
   summary: string;
-  /** Main subjects or objects visible in the image */
-  subjects: string[];
-  /** The environment or setting of the image */
-  setting: string;
-  /** Dominant colors in the image */
-  colors: string[];
-  /** Overall mood or tone of the image */
-  mood: string;
-  /** Any readable text visible in the image, or empty string if none */
+  /** Any readable text visible in the image(s), or empty string if none */
   text_content: string;
-  /** Relevant descriptive tags for the image */
+  /** Relevant descriptive tags */
   tags: string[];
-  /** Technical observations about the image */
+  /** Technical observations about the image(s) */
   technical_details: AnalyzeImageResponseTechnicalDetails;
+  /** Mode-specific structured output */
+  mode_result: AnalyzeImageResponseModeResult;
 }
 
 export interface ErrorResponse {

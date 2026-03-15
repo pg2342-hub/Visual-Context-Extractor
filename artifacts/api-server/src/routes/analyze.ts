@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { anthropic } from "@workspace/integrations-anthropic-ai";
-import { AnalyzeImageBody, AnalyzeImageResponse } from "@workspace/api-zod";
+import { AnalyzeImageBody } from "@workspace/api-zod";
+import type Anthropic from "@anthropic-ai/sdk";
 
 const router: IRouter = Router();
 
@@ -17,23 +18,90 @@ function isSupportedMimeType(mimeType: string): mimeType is SupportedMimeType {
   return (SUPPORTED_MIME_TYPES as readonly string[]).includes(mimeType);
 }
 
-const EXTRACTION_PROMPT = `You are an expert image analyst. Analyze the provided image and extract structured information.
+type AnalysisMode =
+  | "summarize"
+  | "extract_data_points"
+  | "identify_ui_elements"
+  | "describe_code";
 
-Return ONLY a valid JSON object with exactly these fields (no markdown, no extra text):
-{
-  "summary": "A concise 1-3 sentence description of what the image depicts",
-  "subjects": ["list", "of", "main", "subjects", "or", "objects"],
-  "setting": "The environment, location, or context of the image",
-  "colors": ["dominant", "color", "names"],
-  "mood": "The overall mood, tone, or emotion conveyed by the image",
-  "text_content": "Any readable text visible in the image, or empty string if none",
-  "tags": ["relevant", "descriptive", "keyword", "tags"],
+function buildPrompt(mode: AnalysisMode, imageCount: number): string {
+  const multi = imageCount > 1 ? ` (${imageCount} images provided — analyze them together)` : "";
+
+  const baseFields = `
+  "summary": "A concise 2-4 sentence description of what the image${imageCount > 1 ? "s" : ""} depict${imageCount > 1 ? "" : "s"}",
+  "text_content": "Any readable text visible in the image${imageCount > 1 ? "s" : ""}, or empty string if none",
+  "tags": ["relevant", "keyword", "tags"],
   "technical_details": {
-    "composition": "Description of the image composition and framing",
-    "lighting": "Description of the lighting conditions",
-    "quality": "Assessment of image quality and clarity"
+    "composition": "Composition and framing description",
+    "lighting": "Lighting conditions",
+    "quality": "Image quality assessment"
+  }`;
+
+  switch (mode) {
+    case "summarize":
+      return `You are an expert image analyst${multi}. Analyze the image and produce a structured summary.
+
+Return ONLY a valid JSON object (no markdown, no extra text):
+{
+${baseFields},
+  "mode_result": {
+    "key_observations": ["important observation 1", "observation 2", "..."],
+    "context": "Broader context or background about what is depicted"
   }
 }`;
+
+    case "extract_data_points":
+      return `You are a data extraction specialist${multi}. Analyze the image for any tables, charts, graphs, or data visualizations and extract all data points precisely.
+
+Return ONLY a valid JSON object (no markdown, no extra text):
+{
+${baseFields},
+  "mode_result": {
+    "chart_type": "Type of visualization (bar chart, line graph, pie chart, table, etc.) or 'none'",
+    "data_points": [
+      { "label": "row/column label", "value": "numeric or text value", "unit": "unit if applicable", "category": "category/series name if applicable" }
+    ],
+    "axes": { "x": "x-axis label or null", "y": "y-axis label or null" },
+    "insights": ["key insight from the data 1", "insight 2"],
+    "data_title": "Title of the chart/table if visible, or empty string"
+  }
+}`;
+
+    case "identify_ui_elements":
+      return `You are a UI/UX analysis expert${multi}. Identify and catalog every UI element visible in the image in detail.
+
+Return ONLY a valid JSON object (no markdown, no extra text):
+{
+${baseFields},
+  "mode_result": {
+    "layout_description": "Overall layout structure description",
+    "ui_elements": [
+      { "type": "button|input|label|nav|card|modal|icon|image|list|table|dropdown|etc", "label": "visible text or name", "location": "top-left|center|bottom-right|etc", "purpose": "what this element does", "state": "active|disabled|selected|etc or null" }
+    ],
+    "color_scheme": "Description of the UI color scheme and visual style",
+    "accessibility_notes": "Any accessibility observations"
+  }
+}`;
+
+    case "describe_code":
+      return `You are a senior software engineer${multi}. Analyze the code in the image, explain what it does, identify any issues, and provide a solution or improvement if applicable.
+
+Return ONLY a valid JSON object (no markdown, no extra text):
+{
+${baseFields},
+  "mode_result": {
+    "language": "Programming language detected",
+    "code_description": "Clear explanation of what this code does",
+    "code_blocks": [
+      { "language": "language", "code": "the actual code text extracted", "explanation": "what this block does" }
+    ],
+    "issues": ["identified bug or problem 1", "issue 2"],
+    "solution": "Complete corrected or improved version of the code as a string",
+    "solution_steps": ["step 1 to fix/improve", "step 2", "..."]
+  }
+}`;
+  }
+}
 
 router.post("/analyze", async (req, res) => {
   const parseResult = AnalyzeImageBody.safeParse(req.body);
@@ -46,23 +114,44 @@ router.post("/analyze", async (req, res) => {
     return;
   }
 
-  const { imageData, mimeType } = parseResult.data;
+  const { images, mode } = parseResult.data;
 
-  if (!isSupportedMimeType(mimeType)) {
+  if (!images || images.length === 0) {
     res.status(400).json({
-      error: "Unsupported file type",
-      details: `Supported types are: ${SUPPORTED_MIME_TYPES.join(", ")}`,
+      error: "No images provided",
+      details: "At least one image is required",
     });
     return;
   }
 
-  if (!imageData || imageData.trim().length === 0) {
-    res.status(400).json({
-      error: "Missing image data",
-      details: "imageData must be a non-empty base64 string",
-    });
-    return;
+  for (const img of images) {
+    if (!isSupportedMimeType(img.mimeType)) {
+      res.status(400).json({
+        error: "Unsupported file type",
+        details: `Supported types are: ${SUPPORTED_MIME_TYPES.join(", ")}. Got: ${img.mimeType}`,
+      });
+      return;
+    }
+    if (!img.imageData || img.imageData.trim().length === 0) {
+      res.status(400).json({
+        error: "Missing image data",
+        details: "Each imageData must be a non-empty base64 string",
+      });
+      return;
+    }
   }
+
+  const analysisMode = mode as AnalysisMode;
+  const prompt = buildPrompt(analysisMode, images.length);
+
+  const imageBlocks: Anthropic.ImageBlockParam[] = images.map((img) => ({
+    type: "image" as const,
+    source: {
+      type: "base64" as const,
+      media_type: img.mimeType as SupportedMimeType,
+      data: img.imageData,
+    },
+  }));
 
   try {
     const message = await anthropic.messages.create({
@@ -72,18 +161,8 @@ router.post("/analyze", async (req, res) => {
         {
           role: "user",
           content: [
-            {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: mimeType,
-                data: imageData,
-              },
-            },
-            {
-              type: "text",
-              text: EXTRACTION_PROMPT,
-            },
+            ...imageBlocks,
+            { type: "text", text: prompt },
           ],
         },
       ],
@@ -112,16 +191,7 @@ router.post("/analyze", async (req, res) => {
       return;
     }
 
-    const validated = AnalyzeImageResponse.safeParse(parsed);
-    if (!validated.success) {
-      res.status(500).json({
-        error: "Invalid AI response structure",
-        details: validated.error.message,
-      });
-      return;
-    }
-
-    res.json(validated.data);
+    res.json(parsed);
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Unknown error occurred";

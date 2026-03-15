@@ -16,39 +16,48 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
- * Receives a base64 image and returns structured context extracted by Claude
- * @summary Analyze an image
+ * Receives base64 images and an extraction mode, returns structured context via Claude
+ * @summary Analyze one or more images
  */
+
 export const AnalyzeImageBody = zod.object({
-  imageData: zod.string().describe("Base64-encoded image data"),
-  mimeType: zod
-    .string()
-    .describe(
-      "MIME type of the image (e.g. image\/jpeg, image\/png, image\/webp, image\/gif)",
-    ),
+  images: zod
+    .array(
+      zod.object({
+        imageData: zod.string().describe("Base64-encoded image data"),
+        mimeType: zod.string().describe("MIME type of the image"),
+      }),
+    )
+    .min(1)
+    .describe("One or more images to analyze"),
+  mode: zod
+    .enum([
+      "summarize",
+      "extract_data_points",
+      "identify_ui_elements",
+      "describe_code",
+    ])
+    .describe("The type of context extraction to perform"),
 });
 
 export const AnalyzeImageResponse = zod.object({
-  summary: zod.string().describe("A concise summary of what the image depicts"),
-  subjects: zod
-    .array(zod.string())
-    .describe("Main subjects or objects visible in the image"),
-  setting: zod.string().describe("The environment or setting of the image"),
-  colors: zod.array(zod.string()).describe("Dominant colors in the image"),
-  mood: zod.string().describe("Overall mood or tone of the image"),
+  summary: zod
+    .string()
+    .describe("A concise summary of what the image(s) depict"),
   text_content: zod
     .string()
     .describe(
-      "Any readable text visible in the image, or empty string if none",
+      "Any readable text visible in the image(s), or empty string if none",
     ),
-  tags: zod
-    .array(zod.string())
-    .describe("Relevant descriptive tags for the image"),
+  tags: zod.array(zod.string()).describe("Relevant descriptive tags"),
   technical_details: zod
     .object({
       composition: zod.string(),
       lighting: zod.string(),
       quality: zod.string(),
     })
-    .describe("Technical observations about the image"),
+    .describe("Technical observations about the image(s)"),
+  mode_result: zod
+    .record(zod.string(), zod.unknown())
+    .describe("Mode-specific structured output"),
 });

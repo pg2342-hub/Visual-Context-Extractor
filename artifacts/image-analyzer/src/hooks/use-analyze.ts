@@ -1,48 +1,60 @@
 import { useMutation } from "@tanstack/react-query";
-import type { 
-  AnalyzeImageRequest, 
-  AnalyzeImageResponse,
-  ErrorResponse 
-} from "../../../lib/api-client-react/src/generated/api.schemas";
 import { fileToBase64 } from "@/lib/utils";
 
-export function useAnalyzeImage() {
-  return useMutation<AnalyzeImageResponse, Error, File>({
-    mutationFn: async (file: File) => {
-      // 1. Convert file to base64
-      const base64Data = await fileToBase64(file);
-      
-      const payload: AnalyzeImageRequest = {
-        imageData: base64Data,
-        mimeType: file.type
-      };
+export type AnalysisMode =
+  | "summarize"
+  | "extract_data_points"
+  | "identify_ui_elements"
+  | "describe_code";
 
-      // 2. Perform the fetch request
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
+export interface AnalysisRequest {
+  files: File[];
+  mode: AnalysisMode;
+}
+
+export interface TechnicalDetails {
+  composition: string;
+  lighting: string;
+  quality: string;
+}
+
+export interface AnalysisResponse {
+  summary: string;
+  text_content: string;
+  tags: string[];
+  technical_details: TechnicalDetails;
+  mode_result: Record<string, unknown>;
+}
+
+export function useAnalyzeImage() {
+  return useMutation<AnalysisResponse, Error, AnalysisRequest>({
+    mutationFn: async ({ files, mode }) => {
+      const images = await Promise.all(
+        files.map(async (file) => ({
+          imageData: await fileToBase64(file),
+          mimeType: file.type,
+        }))
+      );
+
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ images, mode }),
       });
 
-      // 3. Handle errors based on status code
       if (!response.ok) {
-        let errorMessage = 'An unknown error occurred';
+        let errorMessage = "An unknown error occurred";
         try {
-          const errorData = await response.json() as ErrorResponse;
+          const errorData = await response.json() as { error?: string; details?: string };
           errorMessage = errorData.error || errorMessage;
-          if (errorData.details) {
-            errorMessage += `: ${errorData.details}`;
-          }
-        } catch (e) {
+          if (errorData.details) errorMessage += `: ${errorData.details}`;
+        } catch {
           errorMessage = `HTTP error! status: ${response.status}`;
         }
         throw new Error(errorMessage);
       }
 
-      // 4. Return parsed success data
-      return (await response.json()) as AnalyzeImageResponse;
-    }
+      return response.json() as Promise<AnalysisResponse>;
+    },
   });
 }
