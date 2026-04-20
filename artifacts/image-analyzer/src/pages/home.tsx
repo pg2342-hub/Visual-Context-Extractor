@@ -70,7 +70,7 @@ export default function Home() {
             Understand any image instantly.
           </h2>
           <p className="text-slate-500 md:text-lg">
-            Upload one or more images, pick an extraction mode, and let Claude do the rest.
+            Upload one or more images, pick an extraction mode, and let me do the rest.
           </p>
         </div>
 
