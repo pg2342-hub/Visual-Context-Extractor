@@ -11,6 +11,8 @@ tags:
     description: Health operations
   - name: analyze
     description: Image analysis operations
+  - name: project-documents
+    description: Private client project reference documents
 paths:
   /healthz:
     get:
@@ -102,6 +104,100 @@ paths:
           description: Project and its project-specific settings were deleted
         "404":
           description: Project not found
+  /projects/{id}/documents:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: listProjectDocuments
+      tags: [project-documents]
+      summary: List reference documents for an owned client project
+      responses:
+        "200":
+          description: Project documents
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectDocumentsResponse"
+        "404":
+          description: Project not found
+    post:
+      operationId: createProjectDocument
+      tags: [project-documents]
+      summary: Finalize and extract text from an uploaded project document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectDocumentInput"
+      responses:
+        "201":
+          description: Uploaded document registered and indexed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectDocument"
+        "400":
+          description: Invalid or unsupported document
+        "404":
+          description: Project not found
+        "413":
+          description: File exceeds the upload limit
+  /projects/{id}/documents/upload-url:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    post:
+      operationId: requestProjectDocumentUploadUrl
+      tags: [project-documents]
+      summary: Request a private direct-upload URL for a project document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectDocumentUploadRequest"
+      responses:
+        "200":
+          description: Presigned upload URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectDocumentUploadResponse"
+        "400":
+          description: Invalid or unsupported document
+        "404":
+          description: Project not found
+        "413":
+          description: File exceeds the upload limit
+  /projects/{id}/documents/{documentId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: documentId
+        in: path
+        required: true
+        schema:
+          type: integer
+    delete:
+      operationId: deleteProjectDocument
+      tags: [project-documents]
+      summary: Remove a reference document from an owned client project
+      responses:
+        "204":
+          description: Document and private file deleted
+        "404":
+          description: Project or document not found
   /analyze:
     post:
       operationId: analyzeImage
@@ -228,6 +324,45 @@ components:
         knowledge:
           type: string
           maxLength: 30000
+    ProjectDocument:
+      type: object
+      properties:
+        id: { type: integer }
+        projectId: { type: integer }
+        originalName: { type: string }
+        mimeType: { type: string }
+        sizeBytes: { type: integer }
+        createdAt: { type: string, format: date-time }
+      required: [id, projectId, originalName, mimeType, sizeBytes, createdAt]
+    ProjectDocumentsResponse:
+      type: object
+      properties:
+        documents:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectDocument"
+      required: [documents]
+    ProjectDocumentUploadRequest:
+      type: object
+      properties:
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 1, maximum: 10485760 }
+        contentType: { type: string, minLength: 1 }
+      required: [fileName, sizeBytes, contentType]
+    ProjectDocumentUploadResponse:
+      type: object
+      properties:
+        uploadURL: { type: string, format: uri }
+        objectPath: { type: string }
+      required: [uploadURL, objectPath]
+    ProjectDocumentInput:
+      type: object
+      properties:
+        fileName: { type: string, minLength: 1, maxLength: 255 }
+        sizeBytes: { type: integer, minimum: 1, maximum: 10485760 }
+        contentType: { type: string, minLength: 1 }
+        objectPath: { type: string, minLength: 1 }
+      required: [fileName, sizeBytes, contentType, objectPath]
     AnalyzeImageResponse:
       type: object
       properties:

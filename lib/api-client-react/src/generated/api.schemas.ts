@@ -77,6 +77,56 @@ export interface ClientProjectUpdate {
   knowledge?: string;
 }
 
+export interface ProjectDocument {
+  id: number;
+  projectId: number;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: string;
+}
+
+export interface ProjectDocumentsResponse {
+  documents: ProjectDocument[];
+}
+
+export interface ProjectDocumentUploadRequest {
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  fileName: string;
+  /**
+   * @minimum 1
+   * @maximum 10485760
+   */
+  sizeBytes: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface ProjectDocumentUploadResponse {
+  uploadURL: string;
+  objectPath: string;
+}
+
+export interface ProjectDocumentInput {
+  /**
+   * @minLength 1
+   * @maxLength 255
+   */
+  fileName: string;
+  /**
+   * @minimum 1
+   * @maximum 10485760
+   */
+  sizeBytes: number;
+  /** @minLength 1 */
+  contentType: string;
+  /** @minLength 1 */
+  objectPath: string;
+}
+
 /**
  * Technical observations about the image(s)
  */

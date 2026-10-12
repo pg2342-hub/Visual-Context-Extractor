@@ -95,6 +95,80 @@ export const DeleteProjectParams = zod.object({
 });
 
 /**
+ * @summary List reference documents for an owned client project
+ */
+export const ListProjectDocumentsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListProjectDocumentsResponse = zod.object({
+  documents: zod.array(
+    zod.object({
+      id: zod.number(),
+      projectId: zod.number(),
+      originalName: zod.string(),
+      mimeType: zod.string(),
+      sizeBytes: zod.number(),
+      createdAt: zod.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Finalize and extract text from an uploaded project document
+ */
+export const CreateProjectDocumentParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const createProjectDocumentBodyFileNameMax = 255;
+
+export const createProjectDocumentBodySizeBytesMax = 10485760;
+
+export const CreateProjectDocumentBody = zod.object({
+  fileName: zod.string().min(1).max(createProjectDocumentBodyFileNameMax),
+  sizeBytes: zod.number().min(1).max(createProjectDocumentBodySizeBytesMax),
+  contentType: zod.string().min(1),
+  objectPath: zod.string().min(1),
+});
+
+/**
+ * @summary Request a private direct-upload URL for a project document
+ */
+export const RequestProjectDocumentUploadUrlParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const requestProjectDocumentUploadUrlBodyFileNameMax = 255;
+
+export const requestProjectDocumentUploadUrlBodySizeBytesMax = 10485760;
+
+export const RequestProjectDocumentUploadUrlBody = zod.object({
+  fileName: zod
+    .string()
+    .min(1)
+    .max(requestProjectDocumentUploadUrlBodyFileNameMax),
+  sizeBytes: zod
+    .number()
+    .min(1)
+    .max(requestProjectDocumentUploadUrlBodySizeBytesMax),
+  contentType: zod.string().min(1),
+});
+
+export const RequestProjectDocumentUploadUrlResponse = zod.object({
+  uploadURL: zod.string().url(),
+  objectPath: zod.string(),
+});
+
+/**
+ * @summary Remove a reference document from an owned client project
+ */
+export const DeleteProjectDocumentParams = zod.object({
+  id: zod.coerce.number(),
+  documentId: zod.coerce.number(),
+});
+
+/**
  * Receives base64 images and an extraction mode, returns structured context via Claude
  * @summary Analyze one or more images
  */

@@ -4,6 +4,7 @@ import { Link, useLocation, useRoute } from "wouter";
 import { useUser } from "@clerk/react";
 import { ArrowLeft, BookOpenText, Cable, Check, CircleHelp, FolderKanban, LoaderCircle, Save, Settings2 } from "lucide-react";
 import { useProjects } from "@/components/project-context";
+import { ProjectDocuments } from "@/components/project-documents";
 import type { ClientProject } from "@workspace/api-client-react";
 
 type SettingsSection = "details" | "knowledge" | "integrations";
@@ -217,6 +218,7 @@ export default function ProjectSettingsPage() {
               <p className="mt-4 rounded-xl border border-[#dcebef] bg-[#f2f9fa] px-4 py-3 text-[13px] leading-6 text-[#4f6f7b]">
                 When this client project is active, these notes are included as reference context in image analysis. The analyzer is instructed to distinguish notes from what is actually visible in the image.
               </p>
+              <ProjectDocuments projectId={projectId} />
             </div>
           )}
 

@@ -18,3 +18,8 @@ export * from "./clientProjectUpdate";
 export * from "./errorResponse";
 export * from "./healthStatus";
 export * from "./imageInput";
+export * from "./projectDocument";
+export * from "./projectDocumentInput";
+export * from "./projectDocumentsResponse";
+export * from "./projectDocumentUploadRequest";
+export * from "./projectDocumentUploadResponse";
