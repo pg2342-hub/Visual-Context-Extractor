@@ -36,6 +36,7 @@ export const AnalyzeImageBody = zod.object({
       "extract_data_points",
       "identify_ui_elements",
       "describe_code",
+      "system_design",
     ])
     .describe("The type of context extraction to perform"),
 });

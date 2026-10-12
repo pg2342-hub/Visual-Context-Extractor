@@ -20,6 +20,10 @@ import {
   Lightbulb,
   Bug,
   Wrench,
+  Network,
+  GitBranch,
+  ShieldAlert,
+  ArrowRightLeft,
 } from 'lucide-react';
 import type { AnalysisResponse, AnalysisMode } from '@/hooks/use-analyze';
 
@@ -35,7 +39,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } },
+  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } },
 };
 
 function Section({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -366,6 +370,154 @@ function CodeResult({ result }: { result: Record<string, unknown> }) {
   );
 }
 
+function SystemDesignResult({ result }: { result: Record<string, unknown> }) {
+  const overview = (result.architecture_overview as string) ?? '';
+  const systems = (result.systems as Array<{
+    name: string; type: string; responsibility: string; technology?: string;
+  }>) ?? [];
+  const integrations = (result.integrations as Array<{
+    source: string; target: string; protocol: string; data_exchanged: string;
+  }>) ?? [];
+  const flows = (result.data_flows as string[]) ?? [];
+  const risks = (result.risks as Array<{
+    area: string; description: string; severity: string;
+  }>) ?? [];
+  const recommendations = (result.recommendations as Array<{
+    priority: string; recommendation: string; rationale: string;
+  }>) ?? [];
+  const questions = (result.assumptions_and_questions as string[]) ?? [];
+
+  return (
+    <div className="flex flex-col gap-4">
+      {overview && (
+        <Section>
+          <SectionCard>
+            <SectionHeader icon={<Network className="w-4 h-4" />} title="Architecture Overview" color="text-indigo-500" />
+            <p className="text-sm text-slate-700 leading-relaxed">{overview}</p>
+          </SectionCard>
+        </Section>
+      )}
+
+      {systems.length > 0 && (
+        <Section>
+          <SectionCard>
+            <SectionHeader icon={<Layers className="w-4 h-4" />} title={`Systems & Components (${systems.length})`} color="text-blue-500" />
+            <div className="grid gap-2 sm:grid-cols-2">
+              {systems.map((system, i) => (
+                <div key={i} className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-semibold text-slate-800">{system.name}</span>
+                    {system.type && <Badge variant="outline" className="text-xs">{system.type}</Badge>}
+                  </div>
+                  {system.responsibility && <p className="mt-1 text-sm text-slate-600">{system.responsibility}</p>}
+                  {system.technology && <p className="mt-2 text-xs text-slate-400">Technology: {system.technology}</p>}
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </Section>
+      )}
+
+      {integrations.length > 0 && (
+        <Section>
+          <SectionCard>
+            <SectionHeader icon={<ArrowRightLeft className="w-4 h-4" />} title={`Integrations (${integrations.length})`} color="text-cyan-600" />
+            <div className="space-y-2">
+              {integrations.map((integration, i) => (
+                <div key={i} className="rounded-lg border border-slate-100 p-3">
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <span className="font-semibold text-slate-800">{integration.source}</span>
+                    <span className="text-slate-400">→</span>
+                    <span className="font-semibold text-slate-800">{integration.target}</span>
+                    {integration.protocol && <Badge variant="outline" className="text-xs">{integration.protocol}</Badge>}
+                  </div>
+                  {integration.data_exchanged && <p className="mt-1 text-sm text-slate-600">{integration.data_exchanged}</p>}
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </Section>
+      )}
+
+      {flows.length > 0 && (
+        <Section>
+          <SectionCard>
+            <SectionHeader icon={<GitBranch className="w-4 h-4" />} title="Data Flows" color="text-violet-500" />
+            <ol className="space-y-2">
+              {flows.map((flow, i) => (
+                <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-700">{i + 1}</span>
+                  {flow}
+                </li>
+              ))}
+            </ol>
+          </SectionCard>
+        </Section>
+      )}
+
+      {risks.length > 0 && (
+        <Section>
+          <SectionCard>
+            <SectionHeader icon={<ShieldAlert className="w-4 h-4" />} title="Risks & Gaps" color="text-rose-500" />
+            <div className="space-y-2">
+              {risks.map((risk, i) => (
+                <div key={i} className="flex items-start gap-3 rounded-lg border border-rose-100 bg-rose-50/50 p-3">
+                  <Badge className={
+                    risk.severity?.toLowerCase() === 'high'
+                      ? 'bg-rose-100 text-rose-700 border-rose-200'
+                      : risk.severity?.toLowerCase() === 'medium'
+                        ? 'bg-amber-100 text-amber-700 border-amber-200'
+                        : 'bg-slate-100 text-slate-600 border-slate-200'
+                  }>{risk.severity || 'unknown'}</Badge>
+                  <div>
+                    {risk.area && <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{risk.area}</p>}
+                    <p className="text-sm text-slate-700">{risk.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </Section>
+      )}
+
+      {recommendations.length > 0 && (
+        <Section>
+          <SectionCard>
+            <SectionHeader icon={<Lightbulb className="w-4 h-4" />} title="Recommendations" color="text-amber-500" />
+            <div className="space-y-3">
+              {recommendations.map((item, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <Badge variant="outline" className="mt-0.5 shrink-0 text-xs">{item.priority || 'priority n/a'}</Badge>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">{item.recommendation}</p>
+                    {item.rationale && <p className="mt-0.5 text-sm text-slate-600">{item.rationale}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </Section>
+      )}
+
+      {questions.length > 0 && (
+        <Section>
+          <SectionCard>
+            <SectionHeader icon={<Lightbulb className="w-4 h-4" />} title="Assumptions & Client Questions" color="text-slate-500" />
+            <ul className="space-y-2">
+              {questions.map((question, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />
+                  {question}
+                </li>
+              ))}
+            </ul>
+          </SectionCard>
+        </Section>
+      )}
+    </div>
+  );
+}
+
 // ---- Main component ----
 
 export function AnalysisResults({ data, mode }: AnalysisResultsProps) {
@@ -398,6 +550,7 @@ export function AnalysisResults({ data, mode }: AnalysisResultsProps) {
       {mode === 'extract_data_points' && <DataPointsResult result={data.mode_result} />}
       {mode === 'identify_ui_elements' && <UIElementsResult result={data.mode_result} />}
       {mode === 'describe_code' && <CodeResult result={data.mode_result} />}
+      {mode === 'system_design' && <SystemDesignResult result={data.mode_result} />}
 
       {/* Shared: Text content */}
       {data.text_content && data.text_content.trim() !== '' && (

@@ -17,4 +17,5 @@ export const AnalyzeImageRequestMode = {
   extract_data_points: "extract_data_points",
   identify_ui_elements: "identify_ui_elements",
   describe_code: "describe_code",
+  system_design: "system_design",
 } as const;

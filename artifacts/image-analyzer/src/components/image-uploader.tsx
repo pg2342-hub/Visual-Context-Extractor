@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadCloud, X, Zap, Plus, BarChart2, Code2 } from 'lucide-react';
+import { UploadCloud, X, Zap, Plus, BarChart2, Code2, Network } from 'lucide-react';
 import { cn, isValidImageType } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ const MODES: { value: AnalysisMode; label: string; description: string }[] = [
   { value: 'extract_data_points', label: 'Extract Data Points', description: 'Tables, charts & graphs' },
   { value: 'identify_ui_elements', label: 'Identify UI Elements', description: 'Map UI components & layout' },
   { value: 'describe_code', label: 'Describe Code', description: 'Explain & solve code problems' },
+  { value: 'system_design', label: 'System Design', description: 'Understand client systems & integrations' },
 ];
 
 interface ImageUploaderProps {
@@ -86,7 +87,7 @@ export function ImageUploader({
       {/* Mode selector */}
       <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
         <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Extraction Mode</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {MODES.map((m) => (
             <button
               key={m.value}
@@ -218,6 +219,11 @@ export function ImageUploader({
                   <>
                     <Code2 className="w-4 h-4" />
                     Analyze Code
+                  </>
+                ) : mode === 'system_design' ? (
+                  <>
+                    <Network className="w-4 h-4" />
+                    Map System
                   </>
                 ) : (
                   <>

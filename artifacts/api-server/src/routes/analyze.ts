@@ -22,7 +22,8 @@ type AnalysisMode =
   | "summarize"
   | "extract_data_points"
   | "identify_ui_elements"
-  | "describe_code";
+  | "describe_code"
+  | "system_design";
 
 function buildPrompt(mode: AnalysisMode, imageCount: number): string {
   const multi = imageCount > 1 ? ` (${imageCount} images provided — analyze them together)` : "";
@@ -98,6 +99,31 @@ ${baseFields},
     "issues": ["identified bug or problem 1", "issue 2"],
     "solution": "Complete corrected or improved version of the code as a string",
     "solution_steps": ["step 1 to fix/improve", "step 2", "..."]
+  }
+}`;
+
+    case "system_design":
+      return `You are a senior systems architect helping a consultant understand a client's existing systems from the provided image${multi}. The images may show architecture diagrams, system maps, infrastructure, application screens, or technical documentation. Synthesize all images together, and distinguish what is explicitly visible from what is inferred. Do not invent vendors, protocols, infrastructure, or implementation details; use "unclear" or state an assumption when evidence is missing. Focus on actionable insights relevant to understanding and improving the client's system.
+
+Return ONLY a valid JSON object (no markdown, no extra text):
+{
+${baseFields},
+  "mode_result": {
+    "architecture_overview": "Plain-language explanation of the system and its apparent purpose",
+    "systems": [
+      { "name": "Visible system, application, or component name", "type": "Application|service|database|platform|user group|other", "responsibility": "Apparent role in the system", "technology": "Technology or vendor only when visibly identified; otherwise empty string" }
+    ],
+    "integrations": [
+      { "source": "Origin system", "target": "Destination system", "protocol": "Visible protocol or connection type, or 'unclear'", "data_exchanged": "Data or purpose of the connection, if evident" }
+    ],
+    "data_flows": ["Important end-to-end flow, in sequence, noting uncertain steps"],
+    "risks": [
+      { "area": "Reliability|security|operations|data|scalability|other", "description": "Evidence-based concern or gap", "severity": "high|medium|low|unknown" }
+    ],
+    "recommendations": [
+      { "priority": "high|medium|low", "recommendation": "Practical next step", "rationale": "Why it matters based on the available evidence" }
+    ],
+    "assumptions_and_questions": ["Unverified assumption or focused question to ask the client"]
   }
 }`;
   }

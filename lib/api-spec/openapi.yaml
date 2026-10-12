@@ -93,6 +93,7 @@ components:
             - extract_data_points
             - identify_ui_elements
             - describe_code
+            - system_design
           description: The type of context extraction to perform
       required:
         - images

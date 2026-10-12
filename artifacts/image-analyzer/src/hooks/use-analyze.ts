@@ -5,7 +5,8 @@ export type AnalysisMode =
   | "summarize"
   | "extract_data_points"
   | "identify_ui_elements"
-  | "describe_code";
+  | "describe_code"
+  | "system_design";
 
 export interface AnalysisRequest {
   files: File[];
