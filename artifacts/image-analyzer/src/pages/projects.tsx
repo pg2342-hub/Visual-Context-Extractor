@@ -38,21 +38,21 @@ export default function ProjectsPage() {
   });
 
   if (!isLoaded) {
-    return <PageFrame><p className="text-sm text-slate-500">Loading your workspace…</p></PageFrame>;
+    return <PageFrame><div className="space-y-4"><div className="h-8 w-56 animate-pulse rounded-lg bg-[#e8f1f3]" /><div className="h-28 animate-pulse rounded-2xl border border-[#e4edef] bg-white/70" /></div></PageFrame>;
   }
 
   if (!isSignedIn) {
     return (
       <PageFrame>
-        <div className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-          <FolderKanban className="mx-auto mb-4 h-8 w-8 text-blue-600" />
-          <h2 className="text-2xl font-bold">Your client projects</h2>
-          <p className="mt-2 text-slate-600">
+        <div className="mx-auto max-w-xl rounded-[22px] border border-[#dfeaec] bg-white/85 p-8 text-center shadow-[0_16px_44px_rgba(40,74,91,.06)] sm:p-10">
+          <span className="mx-auto mb-5 grid h-12 w-12 place-items-center rounded-2xl bg-[#eaf5f8] text-[#347f9d]"><FolderKanban className="h-5 w-5" /></span>
+          <h2 className="font-display text-2xl font-semibold tracking-[-.04em] text-[#263f4d]">Your client projects</h2>
+          <p className="mt-2 text-[14px] leading-6 text-[#71838d]">
             Sign in to keep each client’s project notes and analysis context separate.
           </p>
           <Link
             href="/sign-in"
-            className="mt-6 inline-flex rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+            className="mt-6 inline-flex rounded-lg bg-[#347f9d] px-4 py-2.5 text-sm font-semibold text-white no-underline transition hover:bg-[#286d88]"
           >
             Sign in to continue
           </Link>
@@ -63,21 +63,21 @@ export default function ProjectsPage() {
 
   return (
     <PageFrame>
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-blue-700">
+          <p className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.18em] text-[#568da0]">
             <FolderKanban className="h-4 w-4" />
             Workspace
           </p>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">Client projects</h2>
-          <p className="mt-2 max-w-2xl text-slate-600">
+          <h2 className="font-display text-3xl font-semibold tracking-[-.05em] text-[#243d4b]">Client projects</h2>
+          <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#71838d]">
             Keep each client’s knowledge and analysis context in its own project.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setShowCreate((visible) => !visible)}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#347f9d] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_5px_14px_rgba(52,127,157,.17)] transition hover:bg-[#286d88]"
         >
           <Plus className="h-4 w-4" />
           New project
@@ -90,7 +90,7 @@ export default function ProjectsPage() {
             event.preventDefault();
             createMutation.mutate({ name: name.trim(), description: description.trim() });
           }}
-          className="mb-6 grid gap-4 rounded-2xl border border-blue-100 bg-blue-50/50 p-5 sm:grid-cols-2"
+          className="mb-7 grid gap-4 rounded-[20px] border border-[#dcebef] bg-white/85 p-5 shadow-[0_10px_30px_rgba(39,75,95,.04)] sm:grid-cols-2 sm:p-6"
         >
           <label className="text-sm font-medium text-slate-700">
             Project name
@@ -100,7 +100,7 @@ export default function ProjectsPage() {
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Acme systems review"
-              className="mt-1.5 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1.5 h-11 w-full rounded-lg border border-[#dce8eb] bg-white px-3 outline-none transition focus:border-[#78afc0] focus:ring-2 focus:ring-[#e0f0f3]"
             />
           </label>
           <label className="text-sm font-medium text-slate-700">
@@ -110,21 +110,21 @@ export default function ProjectsPage() {
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Project goals or scope"
-              className="mt-1.5 h-11 w-full rounded-lg border border-slate-200 bg-white px-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="mt-1.5 h-11 w-full rounded-lg border border-[#dce8eb] bg-white px-3 outline-none transition focus:border-[#78afc0] focus:ring-2 focus:ring-[#e0f0f3]"
             />
           </label>
           <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
             <button
               type="submit"
               disabled={!name.trim() || createMutation.isPending}
-              className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg bg-[#294957] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1f3c49] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {createMutation.isPending ? "Creating…" : "Create project"}
             </button>
             <button
               type="button"
               onClick={() => setShowCreate(false)}
-              className="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-white"
+              className="rounded-lg px-4 py-2.5 text-sm font-medium text-[#71838d] transition hover:bg-[#f3f8f9]"
             >
               Cancel
             </button>
@@ -141,17 +141,17 @@ export default function ProjectsPage() {
       {isLoading ? (
         <p className="text-sm text-slate-500">Loading projects…</p>
       ) : projects.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
-          <Sparkles className="mx-auto mb-3 h-7 w-7 text-blue-600" />
-          <h3 className="text-lg font-semibold text-slate-900">Start with a client project</h3>
-          <p className="mx-auto mt-2 max-w-md text-sm text-slate-600">
+        <div className="rounded-[22px] border border-dashed border-[#cbdfe4] bg-white/70 px-6 py-12 text-center">
+          <Sparkles className="mx-auto mb-4 h-6 w-6 text-[#6b9dad]" />
+          <h3 className="font-display text-lg font-semibold text-[#2b4654]">Start with a client project</h3>
+          <p className="mx-auto mt-2 max-w-md text-[13px] leading-6 text-[#71838d]">
             Add project-specific notes once, then select the project from the top bar when analyzing client system images.
           </p>
           {!showCreate && (
             <button
               type="button"
               onClick={() => setShowCreate(true)}
-              className="mt-5 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
+              className="mt-5 rounded-lg bg-[#347f9d] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#286d88]"
             >
               Create your first project
             </button>
@@ -164,19 +164,19 @@ export default function ProjectsPage() {
               key={project.id}
               href={`/projects/${project.id}/settings`}
               onClick={() => selectProject(project.id)}
-              className="group rounded-2xl border border-slate-200 bg-white p-5 text-left no-underline shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md"
+              className="group rounded-[20px] border border-[#dfeaec] bg-white/85 p-5 text-left no-underline shadow-[0_7px_24px_rgba(39,75,95,.035)] transition hover:-translate-y-0.5 hover:border-[#bdd9e0] hover:shadow-[0_16px_32px_rgba(39,75,95,.075)] sm:p-6"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <h3 className="truncate text-lg font-semibold text-slate-900">{project.name}</h3>
-                  <p className="mt-1 line-clamp-2 min-h-10 text-sm text-slate-600">
+                  <h3 className="truncate font-display text-[17px] font-semibold tracking-[-.025em] text-[#2b4654]">{project.name}</h3>
+                  <p className="mt-1 line-clamp-2 min-h-10 text-[13px] leading-5 text-[#7a8b93]">
                     {project.description || "No project description yet."}
                   </p>
                 </div>
-                <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-slate-400 transition group-hover:translate-x-1 group-hover:text-blue-700" />
+                <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-[#9aabb1] transition group-hover:translate-x-1 group-hover:text-[#347f9d]" />
               </div>
-              <div className="mt-5 flex items-center gap-2 border-t border-slate-100 pt-4 text-xs font-medium text-slate-500">
-                <span className={`h-2 w-2 rounded-full ${project.knowledge ? "bg-emerald-500" : "bg-slate-300"}`} />
+              <div className="mt-5 flex items-center gap-2 border-t border-[#edf1f2] pt-4 text-xs font-medium text-[#87979e]">
+                <span className={`h-1.5 w-1.5 rounded-full ${project.knowledge ? "bg-[#66a999]" : "bg-[#cbd7da]"}`} />
                 {project.knowledge ? "Knowledge added" : "Knowledge not set up"}
               </div>
             </Link>
@@ -189,7 +189,7 @@ export default function ProjectsPage() {
 
 function PageFrame({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto min-h-[calc(100vh-4rem)] max-w-7xl px-4 py-8 sm:px-6 md:py-10">
+    <main className="mx-auto min-h-[calc(100dvh-4.4rem)] max-w-[1150px] px-4 py-10 sm:px-8 md:py-14">
       {children}
     </main>
   );

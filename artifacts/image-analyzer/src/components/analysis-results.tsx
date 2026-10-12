@@ -52,15 +52,15 @@ function Section({ children, className }: { children: React.ReactNode; className
 
 function SectionCard({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <Card className={`border-slate-100 shadow-sm ${className ?? ''}`}>
-      <CardContent className="p-5">{children}</CardContent>
+    <Card className={`rounded-[18px] border-[#e3ecee] bg-white/85 shadow-[0_8px_26px_rgba(39,75,95,.035)] ${className ?? ''}`}>
+      <CardContent className="p-5 sm:p-6">{children}</CardContent>
     </Card>
   );
 }
 
 function SectionHeader({ icon, title, color = 'text-slate-500' }: { icon: React.ReactNode; title: string; color?: string }) {
   return (
-    <div className={`flex items-center gap-2 mb-3 ${color} text-slate-800`}>
+    <div className={`mb-3 flex items-center gap-2 ${color} text-[#35505d]`}>
       <span className={color}>{icon}</span>
       <h3 className="font-semibold">{title}</h3>
     </div>
@@ -530,15 +530,15 @@ export function AnalysisResults({ data, mode }: AnalysisResultsProps) {
     >
       {/* Summary */}
       <Section>
-        <Card className="border-slate-100 shadow-sm bg-gradient-to-br from-white to-slate-50/60">
+        <Card className="rounded-[18px] border-[#e3ecee] bg-gradient-to-br from-white to-[#f5fafb] shadow-[0_8px_26px_rgba(39,75,95,.035)]">
           <CardContent className="p-6">
             <div className="flex items-start gap-4">
-              <div className="p-2.5 bg-primary/10 text-primary rounded-xl shrink-0 mt-0.5">
+              <div className="mt-0.5 shrink-0 rounded-xl border border-[#dcebef] bg-[#eef7f9] p-2.5 text-[#347f9d]">
                 <AlignLeft className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900 mb-1.5">Summary</h2>
-                <p className="text-slate-600 leading-relaxed">{data.summary}</p>
+                <h2 className="mb-1.5 font-display text-lg font-semibold tracking-[-.025em] text-[#2b4654]">Summary</h2>
+                <p className="text-[14px] leading-7 text-[#5d737e]">{data.summary}</p>
               </div>
             </div>
           </CardContent>
@@ -566,34 +566,34 @@ export function AnalysisResults({ data, mode }: AnalysisResultsProps) {
 
       {/* Technical details */}
       <Section>
-        <Card className="border-slate-100 shadow-sm bg-slate-900 text-slate-100 overflow-hidden relative">
-          <div className="absolute top-0 right-0 w-28 h-28 bg-primary/20 rounded-bl-full blur-3xl opacity-40" />
+        <Card className="relative overflow-hidden rounded-[18px] border-[#dbe8ec] bg-[#f2f8fa] text-[#405c68] shadow-none">
+          <div className="absolute right-0 top-0 h-36 w-36 rounded-bl-full bg-[#dceef2] opacity-50" />
           <CardContent className="p-5 relative z-10">
             <div className="flex items-center gap-2 mb-4">
-              <Camera className="w-4 h-4 text-slate-400" />
-              <h3 className="font-semibold">Technical Details</h3>
+              <Camera className="h-4 w-4 text-[#7095a2]" />
+              <h3 className="font-display font-semibold tracking-[-.02em] text-[#35515e]">Image characteristics</h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <div className="flex items-center gap-1.5 text-slate-400 mb-1">
                   <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium uppercase tracking-wider">Composition</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[.14em]">Composition</span>
                 </div>
-                <p className="text-sm text-slate-300">{data.technical_details.composition}</p>
+                <p className="text-[13px] leading-5 text-[#55717c]">{data.technical_details.composition}</p>
               </div>
               <div>
                 <div className="flex items-center gap-1.5 text-slate-400 mb-1">
                   <Sun className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium uppercase tracking-wider">Lighting</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[.14em]">Lighting</span>
                 </div>
-                <p className="text-sm text-slate-300">{data.technical_details.lighting}</p>
+                <p className="text-[13px] leading-5 text-[#55717c]">{data.technical_details.lighting}</p>
               </div>
               <div>
                 <div className="flex items-center gap-1.5 text-slate-400 mb-1">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span className="text-xs font-medium uppercase tracking-wider">Quality</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-[.14em]">Quality</span>
                 </div>
-                <p className="text-sm text-slate-300">{data.technical_details.quality}</p>
+                <p className="text-[13px] leading-5 text-[#55717c]">{data.technical_details.quality}</p>
               </div>
             </div>
           </CardContent>

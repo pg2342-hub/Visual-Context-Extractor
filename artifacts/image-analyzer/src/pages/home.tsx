@@ -56,24 +56,25 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-slate-900">
-      <main className="container mx-auto px-4 py-8 md:py-10 max-w-4xl">
+    <div className="min-h-[calc(100dvh-4.4rem)] text-[#203747]">
+      <main className="mx-auto max-w-[1000px] px-4 pb-20 pt-12 sm:px-8 md:pt-[76px]">
         {/* Intro */}
-        <div className="text-center max-w-xl mx-auto mb-8">
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-slate-900">
-            Understand any image instantly.
+        <div className="mx-auto mb-11 max-w-[660px] text-center">
+          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[.22em] text-[#5b94a7]">Image context extractor</p>
+          <h2 className="mb-4 font-display text-[34px] font-semibold leading-[1.16] tracking-[-.055em] text-[#203747] sm:text-[46px]">
+            Turn images into useful context.
           </h2>
-          <p className="text-slate-500 md:text-lg">
-            Upload one or more images, pick an extraction mode, and let me do the rest.
+          <p className="mx-auto max-w-[520px] text-[15px] leading-7 text-[#71838d] md:text-base">
+            Extract observations, data, interface details, and code context from screenshots and other visuals.
           </p>
           {selectedProject && (
-            <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-800">
-              Working in <span className="font-semibold">{selectedProject.name}</span>
+            <p className="mx-auto mt-6 inline-flex items-center gap-2 rounded-full border border-[#d5e8ed] bg-white/75 px-3.5 py-1.5 text-[12px] font-medium text-[#537482] shadow-[0_3px_12px_rgba(51,94,112,.04)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#61a2b6]" /> Project context <span className="font-semibold text-[#315b6c]">{selectedProject.name}</span>
             </p>
           )}
         </div>
 
-        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-7">
           {/* Uploader + mode selector */}
           <motion.div
             layout
@@ -102,10 +103,10 @@ export default function Home() {
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.25 }}
               >
-                <Alert variant="destructive" className="border-red-200 bg-red-50 text-red-900 shadow-sm">
+                <Alert variant="destructive" className="border-[#efd6d3] bg-[#fff8f7] text-[#843c38] shadow-sm">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle className="font-semibold">Analysis Failed</AlertTitle>
-                  <AlertDescription className="text-red-700/80 mt-1">
+                  <AlertDescription className="mt-1 text-[#9d5c56]">
                     {analyzeMutation.error.message}
                   </AlertDescription>
                 </Alert>

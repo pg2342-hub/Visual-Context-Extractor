@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 @layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
 @import "@clerk/themes/shadcn.css";
 
 @theme inline {
-  --font-sans: 'Inter', sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --font-sans: 'DM Sans', sans-serif;
+  --font-display: 'Manrope', sans-serif;
 
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -51,35 +51,61 @@
 }
 
 :root {
-  --background: 210 20% 98%;
-  --foreground: 222 47% 11%;
+  --background: 205 35% 98%;
+  --foreground: 211 37% 18%;
   
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 211 37% 18%;
   
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
+  --popover-foreground: 211 37% 18%;
   
-  --primary: 221 83% 53%;
-  --primary-foreground: 210 40% 98%;
+  --primary: 207 61% 39%;
+  --primary-foreground: 0 0% 100%;
   
-  --secondary: 214 32% 91%;
-  --secondary-foreground: 222 47% 11%;
+  --secondary: 202 40% 94%;
+  --secondary-foreground: 211 37% 22%;
   
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
+  --muted: 204 33% 95%;
+  --muted-foreground: 210 15% 46%;
   
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
+  --accent: 199 48% 93%;
+  --accent-foreground: 207 51% 27%;
   
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive: 2 61% 48%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221 83% 53%;
+  --border: 204 24% 88%;
+  --input: 204 24% 88%;
+  --ring: 204 66% 61%;
   
-  --radius: 0.75rem;
+  --radius: 0.9rem;
+  --mist: #dff3f8;
+  --ink: #203747;
+  --muted-ink: #657985;
+  --line: #e0e9ed;
+}
+
+.dark {
+  --background: 211 35% 12%;
+  --foreground: 200 30% 94%;
+  --card: 211 30% 16%;
+  --card-foreground: 200 30% 94%;
+  --popover: 211 30% 16%;
+  --popover-foreground: 200 30% 94%;
+  --primary: 199 56% 64%;
+  --primary-foreground: 211 35% 12%;
+  --secondary: 210 24% 22%;
+  --secondary-foreground: 200 30% 94%;
+  --muted: 210 24% 20%;
+  --muted-foreground: 204 16% 67%;
+  --accent: 204 27% 23%;
+  --accent-foreground: 200 30% 94%;
+  --destructive: 0 55% 46%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 20% 27%;
+  --input: 210 20% 27%;
+  --ring: 199 56% 64%;
 }
 
 @layer base {
@@ -88,6 +114,10 @@
   }
   body {
     @apply bg-background text-foreground antialiased font-sans selection:bg-primary/20 selection:text-primary;
+    background:
+      radial-gradient(ellipse at 12% 0%, rgba(190, 230, 240, .66), transparent 38rem),
+      linear-gradient(180deg, #f8fcfd 0%, #ffffff 36rem, #fbfdfe 100%);
+    min-height: 100dvh;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
@@ -97,6 +127,11 @@
 
 @layer utilities {
   .glass-card {
-    @apply bg-white/70 backdrop-blur-xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+    @apply bg-white/80 backdrop-blur-xl border border-white/70 shadow-[0_12px_34px_rgba(39,75,95,0.05)];
   }
 }
+
+* { -webkit-tap-highlight-color: transparent; }
+button, a, select, input, textarea { outline-offset: 3px; }
+:focus-visible { outline: 2px solid #6aaac0; }
+::selection { background: #cbe8f0; color: #203747; }

@@ -85,24 +85,27 @@ export function ImageUploader({
   return (
     <div className="w-full flex flex-col gap-5">
       {/* Mode selector */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Extraction Mode</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+      <div className="rounded-[20px] border border-[#dfeaec] bg-white/80 p-4 shadow-[0_12px_32px_rgba(39,75,95,0.045)] sm:p-5">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-[#79909a]">Choose an extraction lens</p>
+          <span className="hidden text-xs text-[#9aabb1] sm:block">One image, five useful ways to read it</span>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
           {MODES.map((m) => (
             <button
               key={m.value}
               onClick={() => onModeChange(m.value)}
               disabled={isAnalyzing}
               className={cn(
-                'flex flex-col items-start gap-0.5 p-3 rounded-xl border text-left transition-all duration-200',
+                'flex min-h-[88px] flex-col items-start gap-1 rounded-xl border px-3 py-3 text-left transition-all duration-200',
                 mode === m.value
-                  ? 'border-primary bg-primary/5 text-primary shadow-sm'
-                  : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50',
+                  ? 'border-[#9fc8d4] bg-[#f0f8fa] text-[#286c85] shadow-[inset_0_0_0_1px_rgba(96,158,178,.08)]'
+                  : 'border-[#e6edef] text-[#647780] hover:border-[#c5dce2] hover:bg-[#f8fbfc]',
                 isAnalyzing && 'opacity-50 cursor-not-allowed'
               )}
             >
-              <span className="text-sm font-semibold">{m.label}</span>
-              <span className="text-xs text-slate-400 leading-tight">{m.description}</span>
+              <span className="text-[13px] font-semibold leading-tight">{m.label}</span>
+              <span className="text-[11px] leading-[1.45] text-[#8798a0]">{m.description}</span>
             </button>
           ))}
         </div>
@@ -113,35 +116,35 @@ export function ImageUploader({
         <div
           {...getRootProps()}
           className={cn(
-            'w-full relative overflow-hidden rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer group flex flex-col items-center justify-center p-12 min-h-[260px] bg-white hover:bg-slate-50',
-            isDragActive ? 'border-primary bg-primary/5 scale-[1.01]' : 'border-slate-200 hover:border-primary/40'
+            'group relative flex min-h-[260px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[20px] border border-dashed bg-white/75 p-8 transition-all duration-300 hover:bg-[#f9fcfd] sm:p-12',
+            isDragActive ? 'border-[#72afc2] bg-[#eef8fa] scale-[1.005]' : 'border-[#c9dce1] hover:border-[#84b7c6]'
           )}
         >
           <input {...getInputProps()} />
           <div className={cn(
-            'p-4 rounded-full mb-4 transition-all duration-300',
-            isDragActive ? 'bg-primary/20 text-primary scale-110' : 'bg-slate-100 text-slate-500 group-hover:bg-primary/10 group-hover:text-primary'
+            'mb-4 grid h-14 w-14 place-items-center rounded-2xl transition-all duration-300',
+            isDragActive ? 'bg-[#d7edf2] text-[#347f9d] scale-105' : 'bg-[#edf6f8] text-[#6e9cab] group-hover:bg-[#e3f2f5] group-hover:text-[#347f9d]'
           )}>
             <UploadCloud className="w-8 h-8" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-800 mb-1">Upload images</h3>
-          <p className="text-sm text-slate-500 text-center max-w-[260px]">
-            Drag & drop, click to browse, or paste from clipboard. Multiple images supported.
+          <h3 className="mb-1 font-display text-lg font-semibold tracking-[-.03em] text-[#2c4654]">Add screenshots to inspect</h3>
+          <p className="max-w-[330px] text-center text-[13px] leading-6 text-[#7a8b93]">
+            Drop files here, browse your device, or paste directly from your clipboard. Multiple images are supported.
           </p>
           <div className="mt-5 flex items-center gap-2 text-xs font-medium text-slate-400">
             {['JPEG', 'PNG', 'WEBP', 'GIF'].map(t => (
-              <span key={t} className="px-2 py-1 rounded bg-slate-100">{t}</span>
+            <span key={t} className="rounded-md border border-[#e4edef] bg-[#f7fafb] px-2 py-1">{t}</span>
             ))}
           </div>
         </div>
       ) : (
-        <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+        <div className="overflow-hidden rounded-[20px] border border-[#dfeaec] bg-white/85 shadow-[0_12px_32px_rgba(39,75,95,0.045)]">
           {/* Thumbnail grid */}
-          <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 md:grid-cols-4 sm:p-5">
             {selectedFiles.map((file, idx) => {
               const url = URL.createObjectURL(file);
               return (
-                <div key={idx} className="relative group aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                <div key={idx} className="group relative aspect-square overflow-hidden rounded-xl border border-[#dce8eb] bg-[#f0f5f6]">
                   <img
                     src={url}
                     alt={file.name}
@@ -159,7 +162,8 @@ export function ImageUploader({
                   {!isAnalyzing && (
                     <button
                       onClick={() => onRemoveImage(idx)}
-                      className="absolute top-1.5 right-1.5 p-1 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                      aria-label={`Remove ${file.name}`}
+                      className="absolute right-2 top-2 rounded-full bg-[#294654]/75 p-2 text-white opacity-0 transition-opacity hover:bg-[#294654] group-hover:opacity-100 focus:opacity-100"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -175,27 +179,27 @@ export function ImageUploader({
             {!isAnalyzing && (
               <div
                 {...getRootProps()}
-                className="aspect-square rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center cursor-pointer hover:border-primary/40 hover:bg-slate-50 transition-all group"
+                className="group flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-[#cadde2] transition-all hover:border-[#86b9c8] hover:bg-[#f6fbfc]"
               >
                 <input {...getInputProps()} />
-                <Plus className="w-6 h-6 text-slate-400 group-hover:text-primary transition-colors" />
-                <span className="text-xs text-slate-400 group-hover:text-primary mt-1 transition-colors">Add more</span>
+                <Plus className="h-6 w-6 text-[#91a6ae] transition-colors group-hover:text-[#347f9d]" />
+                <span className="mt-1 text-xs text-[#91a6ae] transition-colors group-hover:text-[#347f9d]">Add more</span>
               </div>
             )}
           </div>
 
           {/* Action bar */}
-          <div className="px-4 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <span className="font-medium text-slate-700">{selectedFiles.length} image{selectedFiles.length > 1 ? 's' : ''}</span>
+          <div className="flex items-center justify-between gap-3 border-t border-[#e8eff1] bg-[#f9fbfc] px-4 py-3 sm:px-5">
+            <div className="flex items-center gap-2 text-[13px] text-[#82939a]">
+              <span className="font-medium text-[#526973]">{selectedFiles.length} image{selectedFiles.length > 1 ? 's' : ''}</span>
               <span>·</span>
-              <span className="text-primary font-medium">{selectedMode.label}</span>
+              <span className="font-medium text-[#347f9d]">{selectedMode.label}</span>
             </div>
             <div className="flex items-center gap-2">
               {!isAnalyzing && (
                 <button
                   onClick={onClearAll}
-                  className="text-xs text-slate-400 hover:text-red-500 transition-colors px-2 py-1.5 rounded hover:bg-red-50"
+                  className="rounded px-2 py-1.5 text-xs text-[#83939a] transition-colors hover:bg-[#fff2f0] hover:text-[#a44f49]"
                 >
                   Clear all
                 </button>
@@ -203,7 +207,7 @@ export function ImageUploader({
               <Button
                 onClick={onAnalyze}
                 disabled={isAnalyzing}
-                className="gap-2 font-semibold shadow-sm"
+                className="gap-2 rounded-lg bg-[#347f9d] font-semibold text-white shadow-[0_4px_12px_rgba(52,127,157,.18)] hover:bg-[#286d88]"
               >
                 {isAnalyzing ? (
                   <>

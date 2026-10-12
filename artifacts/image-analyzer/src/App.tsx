@@ -53,49 +53,49 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "#2563eb",
-    colorForeground: "#0f172a",
-    colorMutedForeground: "#64748b",
-    colorDanger: "#dc2626",
+    colorPrimary: "#347f9d",
+    colorForeground: "#203747",
+    colorMutedForeground: "#71838d",
+    colorDanger: "#b94d46",
     colorBackground: "#ffffff",
     colorInput: "#ffffff",
-    colorInputForeground: "#0f172a",
-    colorNeutral: "#cbd5e1",
-    fontFamily: "Inter, sans-serif",
-    borderRadius: "0.75rem",
+    colorInputForeground: "#203747",
+    colorNeutral: "#d9e5e9",
+    fontFamily: "DM Sans, sans-serif",
+    borderRadius: "0.9rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-white rounded-2xl w-[440px] max-w-full overflow-hidden shadow-xl",
+    cardBox: "bg-white rounded-2xl w-[440px] max-w-full overflow-hidden shadow-[0_24px_80px_rgba(37,73,91,0.12)] border border-[#e2edf0]",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
     footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    headerTitle: "text-slate-900 font-display font-bold",
-    headerSubtitle: "text-slate-600",
-    socialButtonsBlockButtonText: "text-slate-800 font-medium",
-    formFieldLabel: "text-slate-700 font-medium",
-    footerActionLink: "text-blue-700 font-semibold",
-    footerActionText: "text-slate-600",
-    dividerText: "text-slate-500",
-    identityPreviewEditButton: "text-blue-700",
-    formFieldSuccessText: "text-emerald-700",
-    alertText: "text-red-700",
+    headerTitle: "text-[#203747] font-display font-semibold",
+    headerSubtitle: "text-[#71838d]",
+    socialButtonsBlockButtonText: "text-[#304954] font-medium",
+    formFieldLabel: "text-[#405762] font-medium",
+    footerActionLink: "text-[#347f9d] font-semibold",
+    footerActionText: "text-[#71838d]",
+    dividerText: "text-[#84949b]",
+    identityPreviewEditButton: "text-[#347f9d]",
+    formFieldSuccessText: "text-[#357c6f]",
+    alertText: "text-[#a6423d]",
     logoBox: "rounded-lg",
     logoImage: "rounded-lg",
-    socialButtonsBlockButton: "border-slate-200 bg-white hover:bg-slate-50",
-    formButtonPrimary: "bg-blue-600 hover:bg-blue-700 text-white font-semibold",
-    formFieldInput: "border-slate-200 text-slate-900 focus:border-blue-500",
-    footerAction: "text-slate-600",
-    dividerLine: "bg-slate-200",
-    alert: "border-red-200 bg-red-50",
-    otpCodeFieldInput: "border-slate-200 text-slate-900",
-    formFieldRow: "text-slate-700",
-    main: "text-slate-900",
+    socialButtonsBlockButton: "border-[#dce8eb] bg-white hover:bg-[#f5fafb]",
+    formButtonPrimary: "bg-[#347f9d] hover:bg-[#286d88] text-white font-semibold",
+    formFieldInput: "border-[#dce8eb] text-[#203747] focus:border-[#70aabd]",
+    footerAction: "text-[#71838d]",
+    dividerLine: "bg-[#e3ecef]",
+    alert: "border-[#f0d4d1] bg-[#fff7f6]",
+    otpCodeFieldInput: "border-[#dce8eb] text-[#203747]",
+    formFieldRow: "text-[#405762]",
+    main: "text-[#203747]",
   },
 };
 
 function SignInPage() {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-slate-50 px-4 py-8">
+    <div className="flex min-h-[calc(100dvh-4rem)] items-center justify-center bg-transparent px-4 py-10">
       <SignIn
         routing="path"
         path={`${basePath}/sign-in`}
@@ -107,7 +107,7 @@ function SignInPage() {
 
 function SignUpPage() {
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-slate-50 px-4 py-8">
+    <div className="flex min-h-[calc(100dvh-4rem)] items-center justify-center bg-transparent px-4 py-10">
       <SignUp
         routing="path"
         path={`${basePath}/sign-up`}

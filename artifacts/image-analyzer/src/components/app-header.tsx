@@ -10,13 +10,13 @@ export function AppHeader() {
   const [, setLocation] = useLocation();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-200/70 bg-white/90 backdrop-blur-md">
-      <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-6">
+    <header className="sticky top-0 z-50 w-full border-b border-[#dce8ec]/80 bg-[#fbfdfe]/85 backdrop-blur-xl">
+      <div className="mx-auto flex min-h-[70px] max-w-[1320px] flex-wrap items-center justify-between gap-3 px-4 py-2 sm:px-8">
         <Link href="/" className="flex shrink-0 items-center gap-3 text-slate-900 no-underline">
-          <span className="rounded-xl bg-blue-50 p-2 text-blue-700">
-            <ScanSearch className="h-4 w-4" />
+          <span className="grid h-9 w-9 place-items-center rounded-xl border border-[#d7e8ed] bg-[#eaf6f9] text-[#347f9d]">
+            <ScanSearch className="h-[17px] w-[17px]" />
           </span>
-          <span className="font-display text-base font-bold tracking-tight">
+          <span className="font-display text-[15px] font-semibold tracking-[-0.035em] text-[#243d4b]">
             Image Context Extractor
           </span>
         </Link>
@@ -24,7 +24,7 @@ export function AppHeader() {
         <nav aria-label="Main navigation" className="flex flex-wrap items-center justify-end gap-2">
           <Link
             href="/projects"
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-medium text-[#62747e] no-underline transition hover:bg-[#edf5f7] hover:text-[#24485a]"
           >
             <FolderKanban className="h-4 w-4" />
             <span>Client projects</span>
@@ -46,7 +46,7 @@ export function AppHeader() {
                     selectProject(value ? Number(value) : null);
                     setLocation("/");
                   }}
-                  className="h-10 min-w-44 appearance-none rounded-lg border border-slate-200 bg-white py-2 pl-3 pr-9 text-sm font-medium text-slate-700 outline-none transition hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:opacity-60"
+                  className="h-10 min-w-44 appearance-none rounded-lg border border-[#dce8ec] bg-white/80 py-2 pl-3 pr-9 text-[13px] font-medium text-[#405762] outline-none transition hover:border-[#aacbd5] focus:border-[#6ba6ba] focus:ring-2 focus:ring-[#d8edf2] disabled:opacity-60"
                 >
                   <option value="">
                     {isLoading ? "Loading projects…" : "No project selected"}
@@ -65,7 +65,7 @@ export function AppHeader() {
                 <Link
                   href={`/projects/${selectedProject.id}/settings`}
                   aria-label={`${selectedProject.name} settings`}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-50"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-[#dce8ec] text-[#607781] no-underline transition hover:bg-[#f1f8fa]"
                 >
                   <Settings2 className="h-4 w-4" />
                 </Link>
@@ -75,16 +75,16 @@ export function AppHeader() {
 
           <span className="mx-1 hidden h-7 border-l border-slate-200 sm:block" />
           {!isLoaded ? (
-            <span className="h-9 w-20 animate-pulse rounded-lg bg-slate-100" />
+                <span className="h-9 w-20 animate-pulse rounded-lg bg-[#edf4f6]" />
           ) : isSignedIn ? (
             <div className="flex items-center gap-2">
-              <span className="hidden max-w-36 truncate text-sm text-slate-500 md:block">
+                <span className="hidden max-w-36 truncate text-[13px] text-[#74858d] md:block">
                 {user?.firstName || user?.primaryEmailAddress?.emailAddress}
               </span>
               <button
                 type="button"
                 onClick={() => void signOut({ redirectUrl: "/" })}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                className="rounded-lg px-3 py-2 text-[13px] font-medium text-[#62747e] transition hover:bg-[#edf5f7] hover:text-[#24485a]"
               >
                 Sign out
               </button>
@@ -93,13 +93,13 @@ export function AppHeader() {
             <>
               <Link
                 href="/sign-in"
-                className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                className="rounded-lg px-3 py-2 text-[13px] font-medium text-[#62747e] no-underline transition hover:bg-[#edf5f7] hover:text-[#24485a]"
               >
                 Sign in
               </Link>
               <Link
                 href="/sign-up"
-                className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                className="rounded-lg bg-[#347f9d] px-3.5 py-2 text-[13px] font-semibold text-white no-underline transition hover:bg-[#286d88]"
               >
                 Create account
               </Link>
