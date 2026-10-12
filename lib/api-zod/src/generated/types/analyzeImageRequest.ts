@@ -16,4 +16,6 @@ export interface AnalyzeImageRequest {
   images: ImageInput[];
   /** The type of context extraction to perform */
   mode: AnalyzeImageRequestMode;
+  /** Optional owned client project whose context should inform the analysis */
+  projectId?: number;
 }

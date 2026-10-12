@@ -25,6 +25,83 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List the current user's client projects
+      responses:
+        "200":
+          description: Client projects owned by the current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientProjectsResponse"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Create a client project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientProjectInput"
+      responses:
+        "201":
+          description: The created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientProject"
+  /projects/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get one owned client project
+      responses:
+        "200":
+          description: The requested client project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientProject"
+        "404":
+          description: Project not found
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update an owned client project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientProjectUpdate"
+      responses:
+        "200":
+          description: The updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientProject"
+        "404":
+          description: Project not found
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete an owned client project
+      responses:
+        "204":
+          description: Project and its project-specific settings were deleted
+        "404":
+          description: Project not found
   /analyze:
     post:
       operationId: analyzeImage
@@ -95,9 +172,62 @@ components:
             - describe_code
             - system_design
           description: The type of context extraction to perform
+        projectId:
+          type: integer
+          description: Optional owned client project whose context should inform the analysis
       required:
         - images
         - mode
+    ClientProject:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        knowledge:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, name, description, knowledge, createdAt, updatedAt]
+    ClientProjectsResponse:
+      type: object
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClientProject"
+      required: [projects]
+    ClientProjectInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 2000
+      required: [name]
+    ClientProjectUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 120
+        description:
+          type: string
+          maxLength: 2000
+        knowledge:
+          type: string
+          maxLength: 30000
     AnalyzeImageResponse:
       type: object
       properties:

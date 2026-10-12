@@ -16,6 +16,85 @@ export const HealthCheckResponse = zod.object({
 });
 
 /**
+ * @summary List the current user's client projects
+ */
+export const ListProjectsResponse = zod.object({
+  projects: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      description: zod.string(),
+      knowledge: zod.string(),
+      createdAt: zod.date(),
+      updatedAt: zod.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Create a client project
+ */
+export const createProjectBodyNameMax = 120;
+
+export const createProjectBodyDescriptionMax = 2000;
+
+export const CreateProjectBody = zod.object({
+  name: zod.string().min(1).max(createProjectBodyNameMax),
+  description: zod.string().max(createProjectBodyDescriptionMax).optional(),
+});
+
+/**
+ * @summary Get one owned client project
+ */
+export const GetProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetProjectResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string(),
+  knowledge: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Update an owned client project
+ */
+export const UpdateProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const updateProjectBodyNameMax = 120;
+
+export const updateProjectBodyDescriptionMax = 2000;
+
+export const updateProjectBodyKnowledgeMax = 30000;
+
+export const UpdateProjectBody = zod.object({
+  name: zod.string().min(1).max(updateProjectBodyNameMax).optional(),
+  description: zod.string().max(updateProjectBodyDescriptionMax).optional(),
+  knowledge: zod.string().max(updateProjectBodyKnowledgeMax).optional(),
+});
+
+export const UpdateProjectResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  description: zod.string(),
+  knowledge: zod.string(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Delete an owned client project
+ */
+export const DeleteProjectParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
  * Receives base64 images and an extraction mode, returns structured context via Claude
  * @summary Analyze one or more images
  */
@@ -39,6 +118,12 @@ export const AnalyzeImageBody = zod.object({
       "system_design",
     ])
     .describe("The type of context extraction to perform"),
+  projectId: zod
+    .number()
+    .optional()
+    .describe(
+      "Optional owned client project whose context should inform the analysis",
+    ),
 });
 
 export const AnalyzeImageResponse = zod.object({

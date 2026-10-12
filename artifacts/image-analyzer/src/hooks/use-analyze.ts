@@ -11,6 +11,7 @@ export type AnalysisMode =
 export interface AnalysisRequest {
   files: File[];
   mode: AnalysisMode;
+  projectId?: number;
 }
 
 export interface TechnicalDetails {
@@ -29,7 +30,7 @@ export interface AnalysisResponse {
 
 export function useAnalyzeImage() {
   return useMutation<AnalysisResponse, Error, AnalysisRequest>({
-    mutationFn: async ({ files, mode }) => {
+    mutationFn: async ({ files, mode, projectId }) => {
       const images = await Promise.all(
         files.map(async (file) => ({
           imageData: await fileToBase64(file),
@@ -40,7 +41,7 @@ export function useAnalyzeImage() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ images, mode }),
+        body: JSON.stringify({ images, mode, ...(projectId ? { projectId } : {}) }),
       });
 
       if (!response.ok) {

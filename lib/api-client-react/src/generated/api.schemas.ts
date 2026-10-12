@@ -38,6 +38,43 @@ export interface AnalyzeImageRequest {
   images: ImageInput[];
   /** The type of context extraction to perform */
   mode: AnalyzeImageRequestMode;
+  /** Optional owned client project whose context should inform the analysis */
+  projectId?: number;
+}
+
+export interface ClientProject {
+  id: number;
+  name: string;
+  description: string;
+  knowledge: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClientProjectsResponse {
+  projects: ClientProject[];
+}
+
+export interface ClientProjectInput {
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  name: string;
+  /** @maxLength 2000 */
+  description?: string;
+}
+
+export interface ClientProjectUpdate {
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  name?: string;
+  /** @maxLength 2000 */
+  description?: string;
+  /** @maxLength 30000 */
+  knowledge?: string;
 }
 
 /**

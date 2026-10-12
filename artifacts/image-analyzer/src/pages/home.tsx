@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ScanSearch, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { ImageUploader } from '@/components/image-uploader';
 import { AnalysisResults } from '@/components/analysis-results';
 import { useAnalyzeImage, type AnalysisMode } from '@/hooks/use-analyze';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { isValidImageType } from '@/lib/utils';
+import { useProjects } from '@/components/project-context';
 
 export default function Home() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [mode, setMode] = useState<AnalysisMode>('summarize');
+  const { selectedProject } = useProjects();
 
   const analyzeMutation = useAnalyzeImage();
 
@@ -45,24 +47,16 @@ export default function Home() {
 
   const handleAnalyze = () => {
     if (selectedFiles.length > 0) {
-      analyzeMutation.mutate({ files: selectedFiles, mode });
+      analyzeMutation.mutate({
+        files: selectedFiles,
+        mode,
+        projectId: selectedProject?.id,
+      });
     }
   };
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-slate-900">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200/60 bg-white/80 backdrop-blur-md">
-        <div className="container mx-auto px-4 h-14 flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-xl text-primary">
-            <ScanSearch className="w-4 h-4" />
-          </div>
-          <h1 className="font-bold text-lg tracking-tight text-slate-900">
-            Image Context Extractor
-          </h1>
-        </div>
-      </header>
-
       <main className="container mx-auto px-4 py-8 md:py-10 max-w-4xl">
         {/* Intro */}
         <div className="text-center max-w-xl mx-auto mb-8">
@@ -72,6 +66,11 @@ export default function Home() {
           <p className="text-slate-500 md:text-lg">
             Upload one or more images, pick an extraction mode, and let me do the rest.
           </p>
+          {selectedProject && (
+            <p className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-800">
+              Working in <span className="font-semibold">{selectedProject.name}</span>
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-6">

@@ -30,7 +30,7 @@ export default defineConfig({
   base: basePath,
   plugins: [
     react(),
-    tailwindcss(),
+    tailwindcss({ optimize: false }),
     runtimeErrorOverlay(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
@@ -60,6 +60,7 @@ export default defineConfig({
   },
   server: {
     port,
+    strictPort: true,
     host: "0.0.0.0",
     allowedHosts: true,
     fs: {
@@ -69,6 +70,7 @@ export default defineConfig({
   },
   preview: {
     port,
+    strictPort: true,
     host: "0.0.0.0",
     allowedHosts: true,
   },

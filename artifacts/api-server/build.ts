@@ -10,6 +10,8 @@ const __dirname = path.dirname(__filename);
 // which helps cold start times without risking some
 // packages that are not bundle compatible
 const allowlist = [
+  "@clerk/express",
+  "@clerk/shared",
   "@google/generative-ai",
   "axios",
   "connect-pg-simple",
@@ -20,6 +22,7 @@ const allowlist = [
   "express",
   "express-rate-limit",
   "express-session",
+  "http-proxy-middleware",
   "jsonwebtoken",
   "memorystore",
   "multer",
@@ -29,6 +32,8 @@ const allowlist = [
   "passport",
   "passport-local",
   "pg",
+  "pino",
+  "pino-http",
   "stripe",
   "uuid",
   "ws",
