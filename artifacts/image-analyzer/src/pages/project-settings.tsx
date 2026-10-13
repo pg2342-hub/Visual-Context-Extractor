@@ -2,9 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useLocation, useRoute } from "wouter";
 import { useUser } from "@clerk/react";
-import { ArrowLeft, BookOpenText, Cable, Check, CircleHelp, FolderKanban, LoaderCircle, Save, Settings2 } from "lucide-react";
+import { ArrowLeft, BookOpenText, Cable, Check, FolderKanban, LoaderCircle, Save, Settings2 } from "lucide-react";
 import { useProjects } from "@/components/project-context";
 import { ProjectDocuments } from "@/components/project-documents";
+import { ProjectConnections } from "@/components/project-connections";
 import type { ClientProject } from "@workspace/api-client-react";
 
 type SettingsSection = "details" | "knowledge" | "integrations";
@@ -223,26 +224,7 @@ export default function ProjectSettingsPage() {
           )}
 
           {section === "integrations" && (
-            <div className="max-w-2xl">
-              <h3 className="flex items-center gap-2 font-display text-xl font-semibold tracking-[-.035em] text-[#2b4654]">
-                <Cable className="h-5 w-5 text-blue-700" />
-                Project integrations
-              </h3>
-              <p className="mt-1 text-[13px] leading-6 text-[#82929a]">
-                Connections and their permissions will be configured separately for each client project.
-              </p>
-              <div className="mt-6 rounded-xl border border-dashed border-[#cbdfe4] bg-[#f8fbfc] p-5">
-                <div className="flex items-start gap-3">
-                  <CircleHelp className="mt-0.5 h-5 w-5 shrink-0 text-[#7597a3]" />
-                  <div>
-                    <h4 className="font-semibold text-[#38515e]">Connections are paused for now</h4>
-                    <p className="mt-1 text-[13px] leading-6 text-[#71838d]">
-                      No client databases or external accounts are connected. When enabled, you’ll manage source connections from this project, with schema and metadata access only.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ProjectConnections projectId={projectId} />
           )}
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#e8eff1] pt-5">

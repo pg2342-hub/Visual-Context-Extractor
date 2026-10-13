@@ -19,3 +19,4 @@
 
 export * from "./client-projects";
 export * from "./client-project-documents";
+export * from "./client-project-connections";

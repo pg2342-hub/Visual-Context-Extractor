@@ -127,6 +127,72 @@ export interface ProjectDocumentInput {
   objectPath: string;
 }
 
+export type ProjectConnectionProvider =
+  (typeof ProjectConnectionProvider)[keyof typeof ProjectConnectionProvider];
+
+export const ProjectConnectionProvider = {
+  postgres: "postgres",
+  mysql: "mysql",
+  sqlserver: "sqlserver",
+  snowflake: "snowflake",
+  bigquery: "bigquery",
+  databricks: "databricks",
+  redshift: "redshift",
+  mongodb: "mongodb",
+  salesforce: "salesforce",
+  hubspot: "hubspot",
+} as const;
+
+export interface ProjectConnection {
+  id: number;
+  projectId: number;
+  provider: ProjectConnectionProvider;
+  displayName: string;
+  metadata: string;
+  includeInAnalysis: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectConnectionsResponse {
+  connections: ProjectConnection[];
+}
+
+export interface ProjectConnectionInput {
+  provider: ProjectConnectionProvider;
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  displayName: string;
+  /**
+   * Secret credential or connection string. Never returned and encrypted before storage.
+   * @minLength 1
+   * @maxLength 50000
+   */
+  credentials: string;
+  /**
+   * Schema or object metadata only; do not include records or sample values.
+   * @maxLength 30000
+   */
+  metadata?: string;
+  includeInAnalysis?: boolean;
+}
+
+export interface ProjectConnectionUpdate {
+  /**
+   * @minLength 1
+   * @maxLength 120
+   */
+  displayName?: string;
+  /**
+   * Schema or object metadata only; do not include records or sample values.
+   * @maxLength 30000
+   */
+  metadata?: string;
+  includeInAnalysis?: boolean;
+}
+
 /**
  * Technical observations about the image(s)
  */

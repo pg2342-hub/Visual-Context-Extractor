@@ -25,6 +25,10 @@ import type {
   ClientProjectsResponse,
   ErrorResponse,
   HealthStatus,
+  ProjectConnection,
+  ProjectConnectionInput,
+  ProjectConnectionUpdate,
+  ProjectConnectionsResponse,
   ProjectDocument,
   ProjectDocumentInput,
   ProjectDocumentUploadRequest,
@@ -887,6 +891,381 @@ export const useDeleteProjectDocument = <
   TContext
 > => {
   return useMutation(getDeleteProjectDocumentMutationOptions(options));
+};
+
+/**
+ * @summary List metadata-only source connections for an owned client project
+ */
+export const getListProjectConnectionsUrl = (id: number) => {
+  return `/api/projects/${id}/connections`;
+};
+
+export const listProjectConnections = async (
+  id: number,
+  options?: RequestInit,
+): Promise<ProjectConnectionsResponse> => {
+  return customFetch<ProjectConnectionsResponse>(
+    getListProjectConnectionsUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListProjectConnectionsQueryKey = (id: number) => {
+  return [`/api/projects/${id}/connections`] as const;
+};
+
+export const getListProjectConnectionsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProjectConnections>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listProjectConnections>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListProjectConnectionsQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listProjectConnections>>
+  > = ({ signal }) => listProjectConnections(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listProjectConnections>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListProjectConnectionsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProjectConnections>>
+>;
+export type ListProjectConnectionsQueryError = ErrorType<void>;
+
+/**
+ * @summary List metadata-only source connections for an owned client project
+ */
+
+export function useListProjectConnections<
+  TData = Awaited<ReturnType<typeof listProjectConnections>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listProjectConnections>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListProjectConnectionsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * Credentials are encrypted at rest and never returned. Only schema and metadata may be used in analysis.
+ * @summary Store a client-authorized source credential securely
+ */
+export const getCreateProjectConnectionUrl = (id: number) => {
+  return `/api/projects/${id}/connections`;
+};
+
+export const createProjectConnection = async (
+  id: number,
+  projectConnectionInput: ProjectConnectionInput,
+  options?: RequestInit,
+): Promise<ProjectConnection> => {
+  return customFetch<ProjectConnection>(getCreateProjectConnectionUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(projectConnectionInput),
+  });
+};
+
+export const getCreateProjectConnectionMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProjectConnection>>,
+    TError,
+    { id: number; data: BodyType<ProjectConnectionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createProjectConnection>>,
+  TError,
+  { id: number; data: BodyType<ProjectConnectionInput> },
+  TContext
+> => {
+  const mutationKey = ["createProjectConnection"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createProjectConnection>>,
+    { id: number; data: BodyType<ProjectConnectionInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return createProjectConnection(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateProjectConnectionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createProjectConnection>>
+>;
+export type CreateProjectConnectionMutationBody =
+  BodyType<ProjectConnectionInput>;
+export type CreateProjectConnectionMutationError = ErrorType<void>;
+
+/**
+ * @summary Store a client-authorized source credential securely
+ */
+export const useCreateProjectConnection = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProjectConnection>>,
+    TError,
+    { id: number; data: BodyType<ProjectConnectionInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createProjectConnection>>,
+  TError,
+  { id: number; data: BodyType<ProjectConnectionInput> },
+  TContext
+> => {
+  return useMutation(getCreateProjectConnectionMutationOptions(options));
+};
+
+/**
+ * @summary Update source metadata approval for an owned project connection
+ */
+export const getUpdateProjectConnectionUrl = (
+  id: number,
+  connectionId: number,
+) => {
+  return `/api/projects/${id}/connections/${connectionId}`;
+};
+
+export const updateProjectConnection = async (
+  id: number,
+  connectionId: number,
+  projectConnectionUpdate: ProjectConnectionUpdate,
+  options?: RequestInit,
+): Promise<ProjectConnection> => {
+  return customFetch<ProjectConnection>(
+    getUpdateProjectConnectionUrl(id, connectionId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(projectConnectionUpdate),
+    },
+  );
+};
+
+export const getUpdateProjectConnectionMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProjectConnection>>,
+    TError,
+    {
+      id: number;
+      connectionId: number;
+      data: BodyType<ProjectConnectionUpdate>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateProjectConnection>>,
+  TError,
+  { id: number; connectionId: number; data: BodyType<ProjectConnectionUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateProjectConnection"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateProjectConnection>>,
+    {
+      id: number;
+      connectionId: number;
+      data: BodyType<ProjectConnectionUpdate>;
+    }
+  > = (props) => {
+    const { id, connectionId, data } = props ?? {};
+
+    return updateProjectConnection(id, connectionId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateProjectConnectionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateProjectConnection>>
+>;
+export type UpdateProjectConnectionMutationBody =
+  BodyType<ProjectConnectionUpdate>;
+export type UpdateProjectConnectionMutationError = ErrorType<void>;
+
+/**
+ * @summary Update source metadata approval for an owned project connection
+ */
+export const useUpdateProjectConnection = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProjectConnection>>,
+    TError,
+    {
+      id: number;
+      connectionId: number;
+      data: BodyType<ProjectConnectionUpdate>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateProjectConnection>>,
+  TError,
+  { id: number; connectionId: number; data: BodyType<ProjectConnectionUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateProjectConnectionMutationOptions(options));
+};
+
+/**
+ * @summary Disconnect and remove a source from an owned client project
+ */
+export const getDeleteProjectConnectionUrl = (
+  id: number,
+  connectionId: number,
+) => {
+  return `/api/projects/${id}/connections/${connectionId}`;
+};
+
+export const deleteProjectConnection = async (
+  id: number,
+  connectionId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteProjectConnectionUrl(id, connectionId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteProjectConnectionMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProjectConnection>>,
+    TError,
+    { id: number; connectionId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteProjectConnection>>,
+  TError,
+  { id: number; connectionId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteProjectConnection"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteProjectConnection>>,
+    { id: number; connectionId: number }
+  > = (props) => {
+    const { id, connectionId } = props ?? {};
+
+    return deleteProjectConnection(id, connectionId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteProjectConnectionMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteProjectConnection>>
+>;
+
+export type DeleteProjectConnectionMutationError = ErrorType<void>;
+
+/**
+ * @summary Disconnect and remove a source from an owned client project
+ */
+export const useDeleteProjectConnection = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProjectConnection>>,
+    TError,
+    { id: number; connectionId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteProjectConnection>>,
+  TError,
+  { id: number; connectionId: number },
+  TContext
+> => {
+  return useMutation(getDeleteProjectConnectionMutationOptions(options));
 };
 
 /**

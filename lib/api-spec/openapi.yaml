@@ -13,6 +13,8 @@ tags:
     description: Image analysis operations
   - name: project-documents
     description: Private client project reference documents
+  - name: project-connections
+    description: Client-authorized, metadata-only source connections
 paths:
   /healthz:
     get:
@@ -198,6 +200,88 @@ paths:
           description: Document and private file deleted
         "404":
           description: Project or document not found
+  /projects/{id}/connections:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: listProjectConnections
+      tags: [project-connections]
+      summary: List metadata-only source connections for an owned client project
+      responses:
+        "200":
+          description: Project source connections, excluding credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectConnectionsResponse"
+        "404":
+          description: Project not found
+    post:
+      operationId: createProjectConnection
+      tags: [project-connections]
+      summary: Store a client-authorized source credential securely
+      description: Credentials are encrypted at rest and never returned. Only schema and metadata may be used in analysis.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectConnectionInput"
+      responses:
+        "201":
+          description: The project source connection, excluding credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectConnection"
+        "400":
+          description: Invalid connection input
+        "404":
+          description: Project not found
+  /projects/{id}/connections/{connectionId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: connectionId
+        in: path
+        required: true
+        schema:
+          type: integer
+    patch:
+      operationId: updateProjectConnection
+      tags: [project-connections]
+      summary: Update source metadata approval for an owned project connection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectConnectionUpdate"
+      responses:
+        "200":
+          description: Updated project source connection, excluding credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectConnection"
+        "404":
+          description: Project or connection not found
+    delete:
+      operationId: deleteProjectConnection
+      tags: [project-connections]
+      summary: Disconnect and remove a source from an owned client project
+      responses:
+        "204":
+          description: Connection and encrypted credentials deleted
+        "404":
+          description: Project or connection not found
   /analyze:
     post:
       operationId: analyzeImage
@@ -363,6 +447,66 @@ components:
         contentType: { type: string, minLength: 1 }
         objectPath: { type: string, minLength: 1 }
       required: [fileName, sizeBytes, contentType, objectPath]
+    ProjectConnectionProvider:
+      type: string
+      enum:
+        - postgres
+        - mysql
+        - sqlserver
+        - snowflake
+        - bigquery
+        - databricks
+        - redshift
+        - mongodb
+        - salesforce
+        - hubspot
+    ProjectConnection:
+      type: object
+      properties:
+        id: { type: integer }
+        projectId: { type: integer }
+        provider:
+          $ref: "#/components/schemas/ProjectConnectionProvider"
+        displayName: { type: string }
+        metadata: { type: string }
+        includeInAnalysis: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, projectId, provider, displayName, metadata, includeInAnalysis, createdAt, updatedAt]
+    ProjectConnectionsResponse:
+      type: object
+      properties:
+        connections:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectConnection"
+      required: [connections]
+    ProjectConnectionInput:
+      type: object
+      properties:
+        provider:
+          $ref: "#/components/schemas/ProjectConnectionProvider"
+        displayName: { type: string, minLength: 1, maxLength: 120 }
+        credentials:
+          type: string
+          minLength: 1
+          maxLength: 50000
+          description: Secret credential or connection string. Never returned and encrypted before storage.
+        metadata:
+          type: string
+          maxLength: 30000
+          description: Schema or object metadata only; do not include records or sample values.
+        includeInAnalysis: { type: boolean }
+      required: [provider, displayName, credentials]
+    ProjectConnectionUpdate:
+      type: object
+      properties:
+        displayName: { type: string, minLength: 1, maxLength: 120 }
+        metadata:
+          type: string
+          maxLength: 30000
+          description: Schema or object metadata only; do not include records or sample values.
+        includeInAnalysis: { type: boolean }
     AnalyzeImageResponse:
       type: object
       properties:

@@ -169,6 +169,145 @@ export const DeleteProjectDocumentParams = zod.object({
 });
 
 /**
+ * @summary List metadata-only source connections for an owned client project
+ */
+export const ListProjectConnectionsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListProjectConnectionsResponse = zod.object({
+  connections: zod.array(
+    zod.object({
+      id: zod.number(),
+      projectId: zod.number(),
+      provider: zod.enum([
+        "postgres",
+        "mysql",
+        "sqlserver",
+        "snowflake",
+        "bigquery",
+        "databricks",
+        "redshift",
+        "mongodb",
+        "salesforce",
+        "hubspot",
+      ]),
+      displayName: zod.string(),
+      metadata: zod.string(),
+      includeInAnalysis: zod.boolean(),
+      createdAt: zod.date(),
+      updatedAt: zod.date(),
+    }),
+  ),
+});
+
+/**
+ * Credentials are encrypted at rest and never returned. Only schema and metadata may be used in analysis.
+ * @summary Store a client-authorized source credential securely
+ */
+export const CreateProjectConnectionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const createProjectConnectionBodyDisplayNameMax = 120;
+
+export const createProjectConnectionBodyCredentialsMax = 50000;
+
+export const createProjectConnectionBodyMetadataMax = 30000;
+
+export const CreateProjectConnectionBody = zod.object({
+  provider: zod.enum([
+    "postgres",
+    "mysql",
+    "sqlserver",
+    "snowflake",
+    "bigquery",
+    "databricks",
+    "redshift",
+    "mongodb",
+    "salesforce",
+    "hubspot",
+  ]),
+  displayName: zod
+    .string()
+    .min(1)
+    .max(createProjectConnectionBodyDisplayNameMax),
+  credentials: zod
+    .string()
+    .min(1)
+    .max(createProjectConnectionBodyCredentialsMax)
+    .describe(
+      "Secret credential or connection string. Never returned and encrypted before storage.",
+    ),
+  metadata: zod
+    .string()
+    .max(createProjectConnectionBodyMetadataMax)
+    .optional()
+    .describe(
+      "Schema or object metadata only; do not include records or sample values.",
+    ),
+  includeInAnalysis: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update source metadata approval for an owned project connection
+ */
+export const UpdateProjectConnectionParams = zod.object({
+  id: zod.coerce.number(),
+  connectionId: zod.coerce.number(),
+});
+
+export const updateProjectConnectionBodyDisplayNameMax = 120;
+
+export const updateProjectConnectionBodyMetadataMax = 30000;
+
+export const UpdateProjectConnectionBody = zod.object({
+  displayName: zod
+    .string()
+    .min(1)
+    .max(updateProjectConnectionBodyDisplayNameMax)
+    .optional(),
+  metadata: zod
+    .string()
+    .max(updateProjectConnectionBodyMetadataMax)
+    .optional()
+    .describe(
+      "Schema or object metadata only; do not include records or sample values.",
+    ),
+  includeInAnalysis: zod.boolean().optional(),
+});
+
+export const UpdateProjectConnectionResponse = zod.object({
+  id: zod.number(),
+  projectId: zod.number(),
+  provider: zod.enum([
+    "postgres",
+    "mysql",
+    "sqlserver",
+    "snowflake",
+    "bigquery",
+    "databricks",
+    "redshift",
+    "mongodb",
+    "salesforce",
+    "hubspot",
+  ]),
+  displayName: zod.string(),
+  metadata: zod.string(),
+  includeInAnalysis: zod.boolean(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Disconnect and remove a source from an owned client project
+ */
+export const DeleteProjectConnectionParams = zod.object({
+  id: zod.coerce.number(),
+  connectionId: zod.coerce.number(),
+});
+
+/**
  * Receives base64 images and an extraction mode, returns structured context via Claude
  * @summary Analyze one or more images
  */
