@@ -15,7 +15,7 @@ import {
 import { and, asc, eq } from "drizzle-orm";
 import { getAuth } from "@clerk/express";
 import { logger } from "../logger";
-import { MAX_ANALYSIS_DOCUMENT_CONTEXT_CHARS } from "../lib/projectDocumentText";
+import { buildProjectDocumentContext } from "../lib/projectDocumentText";
 
 const router: IRouter = Router();
 
@@ -424,23 +424,29 @@ router.post("/analyze", async (req, res) => {
         if (remainingDocumentChars <= 0) break;
         const sourceId = `DOC-${document.id}`;
         const sourceLabel = `Project document "${document.originalName}"`;
-        const heading = `${sourceId} — ${JSON.stringify(document.originalName)}\n`;
+        const heading = buildProjectDocumentContext([
+          { id: document.id, originalName: document.originalName, extractedText: "" },
+        ]).length;
         const body = document.extractedText.slice(
           0,
-          Math.max(0, remainingDocumentChars - heading.length),
+          Math.max(0, remainingDocumentChars - heading),
         );
         if (!body.trim()) continue;
-        documentContextParts.push(`${heading}${body}`);
+        documentContextParts.push(
+          buildProjectDocumentContext([
+            { id: document.id, originalName: document.originalName, extractedText: body },
+          ]),
+        );
         candidateSourcesById.set(sourceId, {
           id: sourceId,
           kind: "project_document",
           label: sourceLabel,
         });
-        remainingDocumentChars -= heading.length + body.length;
+        remainingDocumentChars -= heading + body.length;
       }
       const documentContext = documentContextParts.length
         ? documentContextParts.join("\n\n")
-        : "No project reference documents have been added.";
+        : buildProjectDocumentContext([]);
 
       const approvedSourceMetadata =
         mode === "system_design"
@@ -541,16 +547,8 @@ Use this information only when relevant to the visible image. Clearly distinguis
   contentBlocks.push({ type: "text", text: prompt });
 
   try {
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 8192,
-      messages: [
-        {
-          role: "user",
-          content: contentBlocks,
-        },
-      ],
-    });
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
 
     const block = message.content[0];
     if (!block || block.type !== "text") {

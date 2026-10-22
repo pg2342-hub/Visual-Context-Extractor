@@ -6,6 +6,21 @@ export const MAX_PROJECT_DOCUMENTS = 20;
 export const MAX_EXTRACTED_DOCUMENT_CHARS = 100_000;
 export const MAX_ANALYSIS_DOCUMENT_CONTEXT_CHARS = 40_000;
 
+export function buildProjectDocumentContext(
+  documents: Array<{ id?: number; originalName: string; extractedText: string }>,
+): string {
+  if (documents.length === 0) {
+    return "No project reference documents have been added.";
+  }
+  return documents
+    .map(
+      (document) =>
+        `${document.id === undefined ? `Document: ${document.originalName}` : `DOC-${document.id} — ${JSON.stringify(document.originalName)}`}\n${document.extractedText}`,
+    )
+    .join("\n\n")
+    .slice(0, MAX_ANALYSIS_DOCUMENT_CONTEXT_CHARS);
+}
+
 const MIME_TYPES_BY_EXTENSION: Record<string, string[]> = {
   pdf: ["application/pdf", "application/octet-stream"],
   docx: [
