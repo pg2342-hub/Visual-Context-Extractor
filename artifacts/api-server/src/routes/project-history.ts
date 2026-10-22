@@ -5,6 +5,7 @@ import {
   CreateProjectFindingParams,
   DeleteProjectAnalysisRunBody,
   DeleteProjectAnalysisRunParams,
+  DeleteProjectFindingParams,
   GetProjectAnalysisRunParams,
   GetProjectAnalysisRunResponse,
   ListProjectAnalysisRunsParams,
@@ -326,6 +327,11 @@ router.patch(
       return;
     }
 
+    if (body.data.status === undefined && body.data.statement === undefined && body.data.type === undefined) {
+      res.status(400).json({ error: "Provide a statement, type, or status to update." });
+      return;
+    }
+
     const statement = body.data.statement?.trim();
     if (body.data.statement !== undefined && !statement) {
       res.status(400).json({ error: "A finding statement is required." });
@@ -342,7 +348,7 @@ router.patch(
       const [finding] = await db
         .update(clientProjectFindings)
         .set({
-          status: body.data.status,
+          ...(body.data.status !== undefined ? { status: body.data.status } : {}),
           ...(statement !== undefined ? { statement } : {}),
           ...(body.data.type !== undefined ? { type: body.data.type } : {}),
           reviewedBy: ownerId,
@@ -368,5 +374,38 @@ router.patch(
     }
   },
 );
+
+router.delete("/projects/:id/findings/:findingId", async (req, res, next) => {
+  const params = DeleteProjectFindingParams.safeParse(req.params);
+  if (!params.success || params.data.id < 1 || params.data.findingId < 1) {
+    res.status(404).json({ error: "Project or finding not found." });
+    return;
+  }
+
+  try {
+    if (!(await getOwnedProject(params.data.id, getAuth(req).userId!))) {
+      res.status(404).json({ error: "Project or finding not found." });
+      return;
+    }
+
+    // Only remove the live finding. Saved run results and memory snapshots
+    // remain an immutable record of the context supplied to earlier analyses.
+    const [deleted] = await db
+      .delete(clientProjectFindings)
+      .where(and(
+        eq(clientProjectFindings.id, params.data.findingId),
+        eq(clientProjectFindings.projectId, params.data.id),
+      ))
+      .returning({ id: clientProjectFindings.id });
+
+    if (!deleted) {
+      res.status(404).json({ error: "Project or finding not found." });
+      return;
+    }
+    res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default router;

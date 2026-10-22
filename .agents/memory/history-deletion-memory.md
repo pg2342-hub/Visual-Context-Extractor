@@ -14,3 +14,9 @@ Memory snapshots recorded in other analyses remain historical evidence, even if 
 **Why:** A snapshot records what context the model actually received, not the current state of project memory. Rewriting it would misrepresent an earlier result.
 
 **How to apply:** Keep live project memory changes separate from already-saved context snapshots.
+
+Finding deletion is a separate, permanent action. Dismiss and Retire remain soft states that keep a record; deleting a finding must not delete or alter its originating analysis.
+
+**Why:** The user explicitly requested hard removal alongside the existing soft states, while preserving exactly what earlier analyses received.
+
+**How to apply:** Keep these actions distinct in future retention or cleanup features. Live findings control future memory; historical analysis snapshots are not rewritten when a finding is removed.

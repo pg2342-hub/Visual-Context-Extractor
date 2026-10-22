@@ -429,6 +429,18 @@ export const GetProjectAnalysisRunResponse = zod.object({
             sourceLabels: zod.array(zod.string()),
           }),
         ),
+        openQuestions: zod
+          .array(
+            zod.object({
+              id: zod.number(),
+              statement: zod.string(),
+              sourceLabels: zod.array(zod.string()),
+            }),
+          )
+          .optional()
+          .describe(
+            "Reviewed open questions, still unresolved. Optional for older saved runs.",
+          ),
       })
       .optional(),
   }),
@@ -522,7 +534,9 @@ export const UpdateProjectFindingBody = zod.object({
     .max(updateProjectFindingBodyStatementMax)
     .optional(),
   type: zod.enum(["fact", "conflict", "open_question"]).optional(),
-  status: zod.enum(["confirmed", "open_conflict", "dismissed", "retired"]),
+  status: zod
+    .enum(["confirmed", "open_conflict", "dismissed", "retired"])
+    .optional(),
 });
 
 export const UpdateProjectFindingResponse = zod.object({
@@ -552,6 +566,14 @@ export const UpdateProjectFindingResponse = zod.object({
   reviewedAt: zod.date().nullable(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
+});
+
+/**
+ * @summary Permanently remove an owned project finding without changing saved analyses
+ */
+export const DeleteProjectFindingParams = zod.object({
+  id: zod.coerce.number(),
+  findingId: zod.coerce.number(),
 });
 
 /**
@@ -665,6 +687,18 @@ export const AnalyzeImageResponse = zod.object({
           sourceLabels: zod.array(zod.string()),
         }),
       ),
+      openQuestions: zod
+        .array(
+          zod.object({
+            id: zod.number(),
+            statement: zod.string(),
+            sourceLabels: zod.array(zod.string()),
+          }),
+        )
+        .optional()
+        .describe(
+          "Reviewed open questions, still unresolved. Optional for older saved runs.",
+        ),
     })
     .optional(),
 });

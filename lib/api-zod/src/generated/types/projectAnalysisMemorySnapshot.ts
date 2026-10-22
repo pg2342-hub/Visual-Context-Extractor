@@ -10,4 +10,6 @@ import type { ProjectAnalysisMemoryEntry } from "./projectAnalysisMemoryEntry";
 export interface ProjectAnalysisMemorySnapshot {
   confirmedFacts: ProjectAnalysisMemoryEntry[];
   openConflicts: ProjectAnalysisMemoryEntry[];
+  /** Reviewed open questions, still unresolved. Optional for older saved runs. */
+  openQuestions?: ProjectAnalysisMemoryEntry[];
 }

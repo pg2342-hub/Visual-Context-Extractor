@@ -1817,6 +1817,91 @@ export const useUpdateProjectFinding = <
 };
 
 /**
+ * @summary Permanently remove an owned project finding without changing saved analyses
+ */
+export const getDeleteProjectFindingUrl = (id: number, findingId: number) => {
+  return `/api/projects/${id}/findings/${findingId}`;
+};
+
+export const deleteProjectFinding = async (
+  id: number,
+  findingId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteProjectFindingUrl(id, findingId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteProjectFindingMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProjectFinding>>,
+    TError,
+    { id: number; findingId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteProjectFinding>>,
+  TError,
+  { id: number; findingId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteProjectFinding"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteProjectFinding>>,
+    { id: number; findingId: number }
+  > = (props) => {
+    const { id, findingId } = props ?? {};
+
+    return deleteProjectFinding(id, findingId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteProjectFindingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteProjectFinding>>
+>;
+
+export type DeleteProjectFindingMutationError = ErrorType<void>;
+
+/**
+ * @summary Permanently remove an owned project finding without changing saved analyses
+ */
+export const useDeleteProjectFinding = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProjectFinding>>,
+    TError,
+    { id: number; findingId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteProjectFinding>>,
+  TError,
+  { id: number; findingId: number },
+  TContext
+> => {
+  return useMutation(getDeleteProjectFindingMutationOptions(options));
+};
+
+/**
  * Receives base64 images and an extraction mode, returns structured context via Claude
  * @summary Analyze one or more images
  */

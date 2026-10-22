@@ -15,5 +15,5 @@ export interface ProjectFindingUpdate {
    */
   statement?: string;
   type?: ProjectFindingType;
-  status: ProjectFindingUpdateStatus;
+  status?: ProjectFindingUpdateStatus;
 }

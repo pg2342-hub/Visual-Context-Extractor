@@ -531,13 +531,14 @@ export function AnalysisResults({ data, mode, readOnly = false, projectId }: Ana
       animate="show"
       className="w-full flex flex-col gap-5 pb-12"
     >
-      {data.memory_used && (data.memory_used.confirmedFacts.length > 0 || data.memory_used.openConflicts.length > 0) && (
+      {data.memory_used && (data.memory_used.confirmedFacts.length > 0 || data.memory_used.openConflicts.length > 0 || (data.memory_used.openQuestions?.length ?? 0) > 0) && (
         <Section>
           <SectionCard className="border-[#dce9e5] bg-[#f6faf7]">
             <SectionHeader icon={<BookOpenTextIcon />} title="Project memory used for this run" color="text-[#638574]" />
             <p className="mb-3 text-xs leading-5 text-[#778b80]">These reviewed findings were included as background context—not as claims about what is visible in the image.</p>
             {data.memory_used.confirmedFacts.length > 0 && <div className="mb-3"><p className="mb-1 text-[10px] font-semibold uppercase tracking-[.13em] text-[#638574]">Confirmed facts</p><ul className="space-y-1">{data.memory_used.confirmedFacts.map((item) => <li key={item.id} className="text-sm text-[#496253]">{item.statement}{item.sourceLabels.length > 0 && <span className="ml-1 text-xs text-[#8a9a8f]">· {item.sourceLabels.join(", ")}</span>}</li>)}</ul></div>}
             {data.memory_used.openConflicts.length > 0 && <div><p className="mb-1 text-[10px] font-semibold uppercase tracking-[.13em] text-[#997844]">Open conflicts</p><ul className="space-y-1">{data.memory_used.openConflicts.map((item) => <li key={item.id} className="text-sm text-[#765f3c]">{item.statement}{item.sourceLabels.length > 0 && <span className="ml-1 text-xs text-[#a08e70]">· {item.sourceLabels.join(", ")}</span>}</li>)}</ul></div>}
+            {(data.memory_used.openQuestions?.length ?? 0) > 0 && <div className="mt-3"><p className="mb-1 text-[10px] font-semibold uppercase tracking-[.13em] text-[#997844]">Open questions — UNRESOLVED</p><ul className="space-y-1">{data.memory_used.openQuestions?.map((item) => <li key={item.id} className="text-sm text-[#765f3c]">{item.statement}{item.sourceLabels.length > 0 && <span className="ml-1 text-xs text-[#a08e70]">· {item.sourceLabels.join(", ")}</span>}</li>)}</ul></div>}
           </SectionCard>
         </Section>
       )}

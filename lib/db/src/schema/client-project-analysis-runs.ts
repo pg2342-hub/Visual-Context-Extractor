@@ -20,6 +20,7 @@ export type ProjectMemoryEntry = {
 export type ProjectMemorySnapshot = {
   confirmedFacts: ProjectMemoryEntry[];
   openConflicts: ProjectMemoryEntry[];
+  openQuestions?: ProjectMemoryEntry[];
 };
 
 export const clientProjectAnalysisRuns = pgTable(

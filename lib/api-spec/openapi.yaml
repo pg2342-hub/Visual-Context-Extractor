@@ -424,6 +424,17 @@ paths:
           description: Invalid finding update
         "404":
           description: Project or finding not found
+    delete:
+      operationId: deleteProjectFinding
+      tags: [project-findings]
+      summary: Permanently remove an owned project finding without changing saved analyses
+      responses:
+        "204":
+          description: Finding permanently deleted; historical memory snapshots are unchanged
+        "401":
+          description: Sign in required
+        "404":
+          description: Project or finding not found
   /analyze:
     post:
       operationId: analyzeImage
@@ -776,6 +787,7 @@ components:
       required: [statement, type, status]
     ProjectFindingUpdate:
       type: object
+      minProperties: 1
       properties:
         statement: { type: string, minLength: 1, maxLength: 2000 }
         type:
@@ -783,7 +795,6 @@ components:
         status:
           type: string
           enum: [confirmed, open_conflict, dismissed, retired]
-      required: [status]
     ProjectAnalysisMemoryEntry:
       type: object
       properties:
@@ -802,6 +813,11 @@ components:
             $ref: "#/components/schemas/ProjectAnalysisMemoryEntry"
         openConflicts:
           type: array
+          items:
+            $ref: "#/components/schemas/ProjectAnalysisMemoryEntry"
+        openQuestions:
+          type: array
+          description: Reviewed open questions, still unresolved. Optional for older saved runs.
           items:
             $ref: "#/components/schemas/ProjectAnalysisMemoryEntry"
       required: [confirmedFacts, openConflicts]

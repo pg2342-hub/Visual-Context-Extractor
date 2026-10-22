@@ -272,6 +272,8 @@ export interface ProjectAnalysisMemoryEntry {
 export interface ProjectAnalysisMemorySnapshot {
   confirmedFacts: ProjectAnalysisMemoryEntry[];
   openConflicts: ProjectAnalysisMemoryEntry[];
+  /** Reviewed open questions, still unresolved. Optional for older saved runs. */
+  openQuestions?: ProjectAnalysisMemoryEntry[];
 }
 
 export interface AnalyzeImageResponse {
@@ -336,7 +338,7 @@ export interface ProjectFindingUpdate {
    */
   statement?: string;
   type?: ProjectFindingType;
-  status: ProjectFindingUpdateStatus;
+  status?: ProjectFindingUpdateStatus;
 }
 
 export type ProjectAnalysisRunMode =
