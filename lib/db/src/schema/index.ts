@@ -20,3 +20,5 @@
 export * from "./client-projects";
 export * from "./client-project-documents";
 export * from "./client-project-connections";
+export * from "./client-project-analysis-runs";
+export * from "./client-project-findings";

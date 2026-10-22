@@ -11,4 +11,9 @@ export interface ImageInput {
   imageData: string;
   /** MIME type of the image */
   mimeType: string;
+  /**
+   * Original image file name for project analysis provenance
+   * @maxLength 255
+   */
+  fileName?: string;
 }

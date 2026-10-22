@@ -14,6 +14,11 @@ export interface ImageInput {
   imageData: string;
   /** MIME type of the image */
   mimeType: string;
+  /**
+   * Original image file name for project analysis provenance
+   * @maxLength 255
+   */
+  fileName?: string;
 }
 
 /**
@@ -207,6 +212,68 @@ export type AnalyzeImageResponseTechnicalDetails = {
  */
 export type AnalyzeImageResponseModeResult = { [key: string]: unknown };
 
+export type ProjectFindingType =
+  (typeof ProjectFindingType)[keyof typeof ProjectFindingType];
+
+export const ProjectFindingType = {
+  fact: "fact",
+  conflict: "conflict",
+  open_question: "open_question",
+} as const;
+
+export type ProjectFindingStatus =
+  (typeof ProjectFindingStatus)[keyof typeof ProjectFindingStatus];
+
+export const ProjectFindingStatus = {
+  pending: "pending",
+  confirmed: "confirmed",
+  open_conflict: "open_conflict",
+  dismissed: "dismissed",
+  retired: "retired",
+} as const;
+
+export type ProjectFindingSourceKind =
+  (typeof ProjectFindingSourceKind)[keyof typeof ProjectFindingSourceKind];
+
+export const ProjectFindingSourceKind = {
+  image: "image",
+  project_document: "project_document",
+  project_knowledge: "project_knowledge",
+  multiple: "multiple",
+  manual: "manual",
+} as const;
+
+export interface ProjectFinding {
+  id: number;
+  projectId: number;
+  /** @nullable */
+  analysisRunId: number | null;
+  statement: string;
+  type: ProjectFindingType;
+  status: ProjectFindingStatus;
+  sourceKind: ProjectFindingSourceKind;
+  sourceRefs: string[];
+  sourceLabels: string[];
+  createdBy: string;
+  /** @nullable */
+  reviewedBy: string | null;
+  /** @nullable */
+  reviewedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectAnalysisMemoryEntry {
+  id: number;
+  statement: string;
+  sourceLabels: string[];
+}
+
+export interface ProjectAnalysisMemorySnapshot {
+  confirmedFacts: ProjectAnalysisMemoryEntry[];
+  openConflicts: ProjectAnalysisMemoryEntry[];
+}
+
 export interface AnalyzeImageResponse {
   /** A concise summary of what the image(s) depict */
   summary: string;
@@ -218,6 +285,98 @@ export interface AnalyzeImageResponse {
   technical_details: AnalyzeImageResponseTechnicalDetails;
   /** Mode-specific structured output */
   mode_result: AnalyzeImageResponseModeResult;
+  /** Saved project analysis run, when projectId was provided */
+  analysisRunId?: number;
+  /** Model-proposed findings for human review in a project analysis */
+  candidate_findings?: ProjectFinding[];
+  memory_used?: ProjectAnalysisMemorySnapshot;
+}
+
+export interface ProjectFindingsResponse {
+  findings: ProjectFinding[];
+}
+
+export type ProjectFindingInputStatus =
+  (typeof ProjectFindingInputStatus)[keyof typeof ProjectFindingInputStatus];
+
+export const ProjectFindingInputStatus = {
+  confirmed: "confirmed",
+  open_conflict: "open_conflict",
+} as const;
+
+export interface ProjectFindingInput {
+  /**
+   * @minLength 1
+   * @maxLength 2000
+   */
+  statement: string;
+  type: ProjectFindingType;
+  status: ProjectFindingInputStatus;
+}
+
+export type ProjectFindingUpdateStatus =
+  (typeof ProjectFindingUpdateStatus)[keyof typeof ProjectFindingUpdateStatus];
+
+export const ProjectFindingUpdateStatus = {
+  confirmed: "confirmed",
+  open_conflict: "open_conflict",
+  dismissed: "dismissed",
+  retired: "retired",
+} as const;
+
+export interface ProjectFindingUpdate {
+  /**
+   * @minLength 1
+   * @maxLength 2000
+   */
+  statement?: string;
+  type?: ProjectFindingType;
+  status: ProjectFindingUpdateStatus;
+}
+
+export type ProjectAnalysisRunMode =
+  (typeof ProjectAnalysisRunMode)[keyof typeof ProjectAnalysisRunMode];
+
+export const ProjectAnalysisRunMode = {
+  summarize: "summarize",
+  extract_data_points: "extract_data_points",
+  identify_ui_elements: "identify_ui_elements",
+  describe_code: "describe_code",
+  system_design: "system_design",
+} as const;
+
+export interface ProjectAnalysisRun {
+  id: number;
+  projectId: number;
+  mode: ProjectAnalysisRunMode;
+  imageNames: string[];
+  summary: string;
+  createdAt: string;
+}
+
+export interface ProjectAnalysisRunsResponse {
+  runs: ProjectAnalysisRun[];
+}
+
+export type ProjectAnalysisRunDetailMode =
+  (typeof ProjectAnalysisRunDetailMode)[keyof typeof ProjectAnalysisRunDetailMode];
+
+export const ProjectAnalysisRunDetailMode = {
+  summarize: "summarize",
+  extract_data_points: "extract_data_points",
+  identify_ui_elements: "identify_ui_elements",
+  describe_code: "describe_code",
+  system_design: "system_design",
+} as const;
+
+export interface ProjectAnalysisRunDetail {
+  id: number;
+  projectId: number;
+  mode: ProjectAnalysisRunDetailMode;
+  imageNames: string[];
+  summary: string;
+  createdAt: string;
+  result: AnalyzeImageResponse;
 }
 
 export interface ErrorResponse {

@@ -15,6 +15,10 @@ tags:
     description: Private client project reference documents
   - name: project-connections
     description: Client-authorized, metadata-only source connections
+  - name: project-history
+    description: Project-scoped image analysis history
+  - name: project-findings
+    description: Human-reviewed findings carried forward in project context
 paths:
   /healthz:
     get:
@@ -282,6 +286,125 @@ paths:
           description: Connection and encrypted credentials deleted
         "404":
           description: Project or connection not found
+  /projects/{id}/analysis-runs:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: listProjectAnalysisRuns
+      tags: [project-history]
+      summary: List analysis history for an owned client project
+      responses:
+        "200":
+          description: Analysis runs in reverse chronological order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectAnalysisRunsResponse"
+        "404":
+          description: Project not found
+  /projects/{id}/analysis-runs/{runId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: runId
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: getProjectAnalysisRun
+      tags: [project-history]
+      summary: Get a saved analysis run and its finding review states
+      responses:
+        "200":
+          description: Full saved result for an owned project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectAnalysisRunDetail"
+        "404":
+          description: Project or analysis run not found
+  /projects/{id}/findings:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      operationId: listProjectFindings
+      tags: [project-findings]
+      summary: List findings and review states for an owned client project
+      responses:
+        "200":
+          description: Project findings, newest first
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectFindingsResponse"
+        "404":
+          description: Project not found
+    post:
+      operationId: createProjectFinding
+      tags: [project-findings]
+      summary: Add a manually reviewed project finding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectFindingInput"
+      responses:
+        "201":
+          description: Manually added project finding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectFinding"
+        "400":
+          description: Invalid finding
+        "404":
+          description: Project not found
+  /projects/{id}/findings/{findingId}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+      - name: findingId
+        in: path
+        required: true
+        schema:
+          type: integer
+    patch:
+      operationId: updateProjectFinding
+      tags: [project-findings]
+      summary: Review or update an owned project finding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectFindingUpdate"
+      responses:
+        "200":
+          description: Updated project finding
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectFinding"
+        "400":
+          description: Invalid finding update
+        "404":
+          description: Project or finding not found
   /analyze:
     post:
       operationId: analyzeImage
@@ -331,6 +454,10 @@ components:
         mimeType:
           type: string
           description: MIME type of the image
+        fileName:
+          type: string
+          maxLength: 255
+          description: Original image file name for project analysis provenance
       required:
         - imageData
         - mimeType
@@ -539,12 +666,157 @@ components:
           type: object
           description: Mode-specific structured output
           additionalProperties: true
+        analysisRunId:
+          type: integer
+          description: Saved project analysis run, when projectId was provided
+        candidate_findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectFinding"
+          description: Model-proposed findings for human review in a project analysis
+        memory_used:
+          $ref: "#/components/schemas/ProjectAnalysisMemorySnapshot"
       required:
         - summary
         - text_content
         - tags
         - technical_details
         - mode_result
+    ProjectFindingType:
+      type: string
+      enum: [fact, conflict, open_question]
+    ProjectFindingStatus:
+      type: string
+      enum: [pending, confirmed, open_conflict, dismissed, retired]
+    ProjectFindingSourceKind:
+      type: string
+      enum: [image, project_document, project_knowledge, multiple, manual]
+    ProjectFinding:
+      type: object
+      properties:
+        id: { type: integer }
+        projectId: { type: integer }
+        analysisRunId: { type: ["integer", "null"] }
+        statement: { type: string }
+        type:
+          $ref: "#/components/schemas/ProjectFindingType"
+        status:
+          $ref: "#/components/schemas/ProjectFindingStatus"
+        sourceKind:
+          $ref: "#/components/schemas/ProjectFindingSourceKind"
+        sourceRefs:
+          type: array
+          items: { type: string }
+        sourceLabels:
+          type: array
+          items: { type: string }
+        createdBy: { type: string }
+        reviewedBy: { type: ["string", "null"] }
+        reviewedAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required:
+        - id
+        - projectId
+        - analysisRunId
+        - statement
+        - type
+        - status
+        - sourceKind
+        - sourceRefs
+        - sourceLabels
+        - createdBy
+        - reviewedBy
+        - reviewedAt
+        - createdAt
+        - updatedAt
+    ProjectFindingsResponse:
+      type: object
+      properties:
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectFinding"
+      required: [findings]
+    ProjectFindingInput:
+      type: object
+      properties:
+        statement: { type: string, minLength: 1, maxLength: 2000 }
+        type:
+          $ref: "#/components/schemas/ProjectFindingType"
+        status:
+          type: string
+          enum: [confirmed, open_conflict]
+      required: [statement, type, status]
+    ProjectFindingUpdate:
+      type: object
+      properties:
+        statement: { type: string, minLength: 1, maxLength: 2000 }
+        type:
+          $ref: "#/components/schemas/ProjectFindingType"
+        status:
+          type: string
+          enum: [confirmed, open_conflict, dismissed, retired]
+      required: [status]
+    ProjectAnalysisMemoryEntry:
+      type: object
+      properties:
+        id: { type: integer }
+        statement: { type: string }
+        sourceLabels:
+          type: array
+          items: { type: string }
+      required: [id, statement, sourceLabels]
+    ProjectAnalysisMemorySnapshot:
+      type: object
+      properties:
+        confirmedFacts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectAnalysisMemoryEntry"
+        openConflicts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectAnalysisMemoryEntry"
+      required: [confirmedFacts, openConflicts]
+    ProjectAnalysisRun:
+      type: object
+      properties:
+        id: { type: integer }
+        projectId: { type: integer }
+        mode:
+          type: string
+          enum: [summarize, extract_data_points, identify_ui_elements, describe_code, system_design]
+        imageNames:
+          type: array
+          items: { type: string }
+        summary: { type: string }
+        createdAt: { type: string, format: date-time }
+      required: [id, projectId, mode, imageNames, summary, createdAt]
+    ProjectAnalysisRunsResponse:
+      type: object
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProjectAnalysisRun"
+      required: [runs]
+    ProjectAnalysisRunDetail:
+      type: object
+      properties:
+        id: { type: integer }
+        projectId: { type: integer }
+        mode:
+          type: string
+          enum: [summarize, extract_data_points, identify_ui_elements, describe_code, system_design]
+        imageNames:
+          type: array
+          items: { type: string }
+        summary: { type: string }
+        createdAt: { type: string, format: date-time }
+        result:
+          $ref: "#/components/schemas/AnalyzeImageResponse"
+      required: [id, projectId, mode, imageNames, summary, createdAt, result]
     ErrorResponse:
       type: object
       properties:

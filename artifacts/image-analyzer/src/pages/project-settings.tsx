@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useLocation, useRoute } from "wouter";
 import { useUser } from "@clerk/react";
-import { ArrowLeft, BookOpenText, Cable, Check, FolderKanban, LoaderCircle, Save, Settings2 } from "lucide-react";
+import { Activity, ArrowLeft, BookOpenText, Cable, Check, FolderKanban, LoaderCircle, Save, Settings2 } from "lucide-react";
 import { useProjects } from "@/components/project-context";
 import { ProjectDocuments } from "@/components/project-documents";
 import { ProjectConnections } from "@/components/project-connections";
+import { ProjectMemory } from "@/components/project-memory";
 import type { ClientProject } from "@workspace/api-client-react";
 
-type SettingsSection = "details" | "knowledge" | "integrations";
+type SettingsSection = "details" | "knowledge" | "integrations" | "memory";
 
 async function updateProject(
   projectId: number,
@@ -124,6 +125,7 @@ export default function ProjectSettingsPage() {
   const sections: { id: SettingsSection; label: string; icon: typeof Settings2 }[] = [
     { id: "details", label: "Project details", icon: Settings2 },
     { id: "knowledge", label: "Knowledge", icon: BookOpenText },
+    { id: "memory", label: "History & findings", icon: Activity },
     { id: "integrations", label: "Integrations", icon: Cable },
   ];
 
@@ -226,6 +228,8 @@ export default function ProjectSettingsPage() {
           {section === "integrations" && (
             <ProjectConnections projectId={projectId} />
           )}
+
+          {section === "memory" && <ProjectMemory projectId={projectId} />}
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#e8eff1] pt-5">
             <button

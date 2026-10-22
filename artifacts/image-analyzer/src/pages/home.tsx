@@ -124,7 +124,7 @@ export default function Home() {
                 exit={{ opacity: 0, y: -16 }}
                 transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               >
-                <AnalysisResults data={analyzeMutation.data} mode={mode} />
+                <AnalysisResults data={analyzeMutation.data} mode={mode} projectId={selectedProject?.id} />
               </motion.div>
             )}
           </AnimatePresence>

@@ -26,10 +26,13 @@ import {
   ArrowRightLeft,
 } from 'lucide-react';
 import type { AnalysisResponse, AnalysisMode } from '@/hooks/use-analyze';
+import { ProjectCandidateReview } from '@/components/project-candidate-review';
 
 interface AnalysisResultsProps {
   data: AnalysisResponse;
   mode: AnalysisMode;
+  readOnly?: boolean;
+  projectId?: number;
 }
 
 const containerVariants = {
@@ -520,7 +523,7 @@ function SystemDesignResult({ result }: { result: Record<string, unknown> }) {
 
 // ---- Main component ----
 
-export function AnalysisResults({ data, mode }: AnalysisResultsProps) {
+export function AnalysisResults({ data, mode, readOnly = false, projectId }: AnalysisResultsProps) {
   return (
     <motion.div
       variants={containerVariants}
@@ -528,6 +531,16 @@ export function AnalysisResults({ data, mode }: AnalysisResultsProps) {
       animate="show"
       className="w-full flex flex-col gap-5 pb-12"
     >
+      {data.memory_used && (data.memory_used.confirmedFacts.length > 0 || data.memory_used.openConflicts.length > 0) && (
+        <Section>
+          <SectionCard className="border-[#dce9e5] bg-[#f6faf7]">
+            <SectionHeader icon={<BookOpenTextIcon />} title="Project memory used for this run" color="text-[#638574]" />
+            <p className="mb-3 text-xs leading-5 text-[#778b80]">These reviewed findings were included as background context—not as claims about what is visible in the image.</p>
+            {data.memory_used.confirmedFacts.length > 0 && <div className="mb-3"><p className="mb-1 text-[10px] font-semibold uppercase tracking-[.13em] text-[#638574]">Confirmed facts</p><ul className="space-y-1">{data.memory_used.confirmedFacts.map((item) => <li key={item.id} className="text-sm text-[#496253]">{item.statement}{item.sourceLabels.length > 0 && <span className="ml-1 text-xs text-[#8a9a8f]">· {item.sourceLabels.join(", ")}</span>}</li>)}</ul></div>}
+            {data.memory_used.openConflicts.length > 0 && <div><p className="mb-1 text-[10px] font-semibold uppercase tracking-[.13em] text-[#997844]">Open conflicts</p><ul className="space-y-1">{data.memory_used.openConflicts.map((item) => <li key={item.id} className="text-sm text-[#765f3c]">{item.statement}{item.sourceLabels.length > 0 && <span className="ml-1 text-xs text-[#a08e70]">· {item.sourceLabels.join(", ")}</span>}</li>)}</ul></div>}
+          </SectionCard>
+        </Section>
+      )}
       {/* Summary */}
       <Section>
         <Card className="rounded-[18px] border-[#e3ecee] bg-gradient-to-br from-white to-[#f5fafb] shadow-[0_8px_26px_rgba(39,75,95,.035)]">
@@ -615,6 +628,32 @@ export function AnalysisResults({ data, mode }: AnalysisResultsProps) {
           </SectionCard>
         </Section>
       )}
+      {!readOnly && projectId && data.candidate_findings && data.candidate_findings.length > 0 && (
+        <ProjectCandidateReview projectId={projectId} candidates={data.candidate_findings} />
+      )}
+      {readOnly && data.candidate_findings && data.candidate_findings.length > 0 && (
+        <Section>
+          <SectionCard className="border-[#dce9e5] bg-[#f6faf7]">
+            <SectionHeader icon={<FileText className="h-4 w-4" />} title="Findings from this analysis" color="text-[#638574]" />
+            <div className="space-y-3">
+              {data.candidate_findings.map((finding) => (
+                <div key={finding.id} data-testid={`historical-candidate-${finding.id}`} className="rounded-xl border border-[#e0ebe4] bg-white/80 p-4">
+                  <p className="text-sm leading-6 text-[#405b4b]">{finding.statement}</p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#74877b]">
+                    <span className="rounded-md bg-[#eef4ef] px-2 py-1 font-semibold uppercase tracking-wide">{finding.status.replace(/_/g, " ")}</span>
+                    <span>{finding.type.replace(/_/g, " ")}</span>
+                  </div>
+                  {finding.sourceLabels.length > 0 && <p className="mt-2 text-[11px] text-[#89988e]">Sources: {finding.sourceLabels.join(", ")}</p>}
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </Section>
+      )}
     </motion.div>
   );
+}
+
+function BookOpenTextIcon() {
+  return <FileText className="h-4 w-4" />;
 }

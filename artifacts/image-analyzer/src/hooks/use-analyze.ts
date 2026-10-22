@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { fileToBase64 } from "@/lib/utils";
+import type { ProjectAnalysisMemorySnapshot, ProjectFinding } from "@workspace/api-client-react";
 
 export type AnalysisMode =
   | "summarize"
@@ -26,6 +27,9 @@ export interface AnalysisResponse {
   tags: string[];
   technical_details: TechnicalDetails;
   mode_result: Record<string, unknown>;
+  analysisRunId?: number;
+  candidate_findings?: ProjectFinding[];
+  memory_used?: ProjectAnalysisMemorySnapshot;
 }
 
 export function useAnalyzeImage() {
@@ -35,6 +39,7 @@ export function useAnalyzeImage() {
         files.map(async (file) => ({
           imageData: await fileToBase64(file),
           mimeType: file.type,
+          fileName: file.name,
         }))
       );
 

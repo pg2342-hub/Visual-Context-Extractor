@@ -25,6 +25,8 @@ import type {
   ClientProjectsResponse,
   ErrorResponse,
   HealthStatus,
+  ProjectAnalysisRunDetail,
+  ProjectAnalysisRunsResponse,
   ProjectConnection,
   ProjectConnectionInput,
   ProjectConnectionUpdate,
@@ -34,6 +36,10 @@ import type {
   ProjectDocumentUploadRequest,
   ProjectDocumentUploadResponse,
   ProjectDocumentsResponse,
+  ProjectFinding,
+  ProjectFindingInput,
+  ProjectFindingUpdate,
+  ProjectFindingsResponse,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -1266,6 +1272,458 @@ export const useDeleteProjectConnection = <
   TContext
 > => {
   return useMutation(getDeleteProjectConnectionMutationOptions(options));
+};
+
+/**
+ * @summary List analysis history for an owned client project
+ */
+export const getListProjectAnalysisRunsUrl = (id: number) => {
+  return `/api/projects/${id}/analysis-runs`;
+};
+
+export const listProjectAnalysisRuns = async (
+  id: number,
+  options?: RequestInit,
+): Promise<ProjectAnalysisRunsResponse> => {
+  return customFetch<ProjectAnalysisRunsResponse>(
+    getListProjectAnalysisRunsUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListProjectAnalysisRunsQueryKey = (id: number) => {
+  return [`/api/projects/${id}/analysis-runs`] as const;
+};
+
+export const getListProjectAnalysisRunsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProjectAnalysisRuns>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listProjectAnalysisRuns>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListProjectAnalysisRunsQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listProjectAnalysisRuns>>
+  > = ({ signal }) =>
+    listProjectAnalysisRuns(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listProjectAnalysisRuns>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListProjectAnalysisRunsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProjectAnalysisRuns>>
+>;
+export type ListProjectAnalysisRunsQueryError = ErrorType<void>;
+
+/**
+ * @summary List analysis history for an owned client project
+ */
+
+export function useListProjectAnalysisRuns<
+  TData = Awaited<ReturnType<typeof listProjectAnalysisRuns>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listProjectAnalysisRuns>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListProjectAnalysisRunsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a saved analysis run and its finding review states
+ */
+export const getGetProjectAnalysisRunUrl = (id: number, runId: number) => {
+  return `/api/projects/${id}/analysis-runs/${runId}`;
+};
+
+export const getProjectAnalysisRun = async (
+  id: number,
+  runId: number,
+  options?: RequestInit,
+): Promise<ProjectAnalysisRunDetail> => {
+  return customFetch<ProjectAnalysisRunDetail>(
+    getGetProjectAnalysisRunUrl(id, runId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetProjectAnalysisRunQueryKey = (id: number, runId: number) => {
+  return [`/api/projects/${id}/analysis-runs/${runId}`] as const;
+};
+
+export const getGetProjectAnalysisRunQueryOptions = <
+  TData = Awaited<ReturnType<typeof getProjectAnalysisRun>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  runId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getProjectAnalysisRun>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetProjectAnalysisRunQueryKey(id, runId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getProjectAnalysisRun>>
+  > = ({ signal }) =>
+    getProjectAnalysisRun(id, runId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!(id && runId),
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getProjectAnalysisRun>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetProjectAnalysisRunQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getProjectAnalysisRun>>
+>;
+export type GetProjectAnalysisRunQueryError = ErrorType<void>;
+
+/**
+ * @summary Get a saved analysis run and its finding review states
+ */
+
+export function useGetProjectAnalysisRun<
+  TData = Awaited<ReturnType<typeof getProjectAnalysisRun>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  runId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getProjectAnalysisRun>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetProjectAnalysisRunQueryOptions(id, runId, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary List findings and review states for an owned client project
+ */
+export const getListProjectFindingsUrl = (id: number) => {
+  return `/api/projects/${id}/findings`;
+};
+
+export const listProjectFindings = async (
+  id: number,
+  options?: RequestInit,
+): Promise<ProjectFindingsResponse> => {
+  return customFetch<ProjectFindingsResponse>(getListProjectFindingsUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListProjectFindingsQueryKey = (id: number) => {
+  return [`/api/projects/${id}/findings`] as const;
+};
+
+export const getListProjectFindingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProjectFindings>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listProjectFindings>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListProjectFindingsQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listProjectFindings>>
+  > = ({ signal }) => listProjectFindings(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof listProjectFindings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListProjectFindingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProjectFindings>>
+>;
+export type ListProjectFindingsQueryError = ErrorType<void>;
+
+/**
+ * @summary List findings and review states for an owned client project
+ */
+
+export function useListProjectFindings<
+  TData = Awaited<ReturnType<typeof listProjectFindings>>,
+  TError = ErrorType<void>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listProjectFindings>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListProjectFindingsQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Add a manually reviewed project finding
+ */
+export const getCreateProjectFindingUrl = (id: number) => {
+  return `/api/projects/${id}/findings`;
+};
+
+export const createProjectFinding = async (
+  id: number,
+  projectFindingInput: ProjectFindingInput,
+  options?: RequestInit,
+): Promise<ProjectFinding> => {
+  return customFetch<ProjectFinding>(getCreateProjectFindingUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(projectFindingInput),
+  });
+};
+
+export const getCreateProjectFindingMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProjectFinding>>,
+    TError,
+    { id: number; data: BodyType<ProjectFindingInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createProjectFinding>>,
+  TError,
+  { id: number; data: BodyType<ProjectFindingInput> },
+  TContext
+> => {
+  const mutationKey = ["createProjectFinding"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createProjectFinding>>,
+    { id: number; data: BodyType<ProjectFindingInput> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return createProjectFinding(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateProjectFindingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createProjectFinding>>
+>;
+export type CreateProjectFindingMutationBody = BodyType<ProjectFindingInput>;
+export type CreateProjectFindingMutationError = ErrorType<void>;
+
+/**
+ * @summary Add a manually reviewed project finding
+ */
+export const useCreateProjectFinding = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProjectFinding>>,
+    TError,
+    { id: number; data: BodyType<ProjectFindingInput> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createProjectFinding>>,
+  TError,
+  { id: number; data: BodyType<ProjectFindingInput> },
+  TContext
+> => {
+  return useMutation(getCreateProjectFindingMutationOptions(options));
+};
+
+/**
+ * @summary Review or update an owned project finding
+ */
+export const getUpdateProjectFindingUrl = (id: number, findingId: number) => {
+  return `/api/projects/${id}/findings/${findingId}`;
+};
+
+export const updateProjectFinding = async (
+  id: number,
+  findingId: number,
+  projectFindingUpdate: ProjectFindingUpdate,
+  options?: RequestInit,
+): Promise<ProjectFinding> => {
+  return customFetch<ProjectFinding>(
+    getUpdateProjectFindingUrl(id, findingId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(projectFindingUpdate),
+    },
+  );
+};
+
+export const getUpdateProjectFindingMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProjectFinding>>,
+    TError,
+    { id: number; findingId: number; data: BodyType<ProjectFindingUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateProjectFinding>>,
+  TError,
+  { id: number; findingId: number; data: BodyType<ProjectFindingUpdate> },
+  TContext
+> => {
+  const mutationKey = ["updateProjectFinding"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateProjectFinding>>,
+    { id: number; findingId: number; data: BodyType<ProjectFindingUpdate> }
+  > = (props) => {
+    const { id, findingId, data } = props ?? {};
+
+    return updateProjectFinding(id, findingId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateProjectFindingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateProjectFinding>>
+>;
+export type UpdateProjectFindingMutationBody = BodyType<ProjectFindingUpdate>;
+export type UpdateProjectFindingMutationError = ErrorType<void>;
+
+/**
+ * @summary Review or update an owned project finding
+ */
+export const useUpdateProjectFinding = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProjectFinding>>,
+    TError,
+    { id: number; findingId: number; data: BodyType<ProjectFindingUpdate> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateProjectFinding>>,
+  TError,
+  { id: number; findingId: number; data: BodyType<ProjectFindingUpdate> },
+  TContext
+> => {
+  return useMutation(getUpdateProjectFindingMutationOptions(options));
 };
 
 /**

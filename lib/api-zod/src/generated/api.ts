@@ -308,9 +308,241 @@ export const DeleteProjectConnectionParams = zod.object({
 });
 
 /**
+ * @summary List analysis history for an owned client project
+ */
+export const ListProjectAnalysisRunsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListProjectAnalysisRunsResponse = zod.object({
+  runs: zod.array(
+    zod.object({
+      id: zod.number(),
+      projectId: zod.number(),
+      mode: zod.enum([
+        "summarize",
+        "extract_data_points",
+        "identify_ui_elements",
+        "describe_code",
+        "system_design",
+      ]),
+      imageNames: zod.array(zod.string()),
+      summary: zod.string(),
+      createdAt: zod.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Get a saved analysis run and its finding review states
+ */
+export const GetProjectAnalysisRunParams = zod.object({
+  id: zod.coerce.number(),
+  runId: zod.coerce.number(),
+});
+
+export const GetProjectAnalysisRunResponse = zod.object({
+  id: zod.number(),
+  projectId: zod.number(),
+  mode: zod.enum([
+    "summarize",
+    "extract_data_points",
+    "identify_ui_elements",
+    "describe_code",
+    "system_design",
+  ]),
+  imageNames: zod.array(zod.string()),
+  summary: zod.string(),
+  createdAt: zod.date(),
+  result: zod.object({
+    summary: zod
+      .string()
+      .describe("A concise summary of what the image(s) depict"),
+    text_content: zod
+      .string()
+      .describe(
+        "Any readable text visible in the image(s), or empty string if none",
+      ),
+    tags: zod.array(zod.string()).describe("Relevant descriptive tags"),
+    technical_details: zod
+      .object({
+        composition: zod.string(),
+        lighting: zod.string(),
+        quality: zod.string(),
+      })
+      .describe("Technical observations about the image(s)"),
+    mode_result: zod
+      .record(zod.string(), zod.unknown())
+      .describe("Mode-specific structured output"),
+    analysisRunId: zod
+      .number()
+      .optional()
+      .describe("Saved project analysis run, when projectId was provided"),
+    candidate_findings: zod
+      .array(
+        zod.object({
+          id: zod.number(),
+          projectId: zod.number(),
+          analysisRunId: zod.number().nullable(),
+          statement: zod.string(),
+          type: zod.enum(["fact", "conflict", "open_question"]),
+          status: zod.enum([
+            "pending",
+            "confirmed",
+            "open_conflict",
+            "dismissed",
+            "retired",
+          ]),
+          sourceKind: zod.enum([
+            "image",
+            "project_document",
+            "project_knowledge",
+            "multiple",
+            "manual",
+          ]),
+          sourceRefs: zod.array(zod.string()),
+          sourceLabels: zod.array(zod.string()),
+          createdBy: zod.string(),
+          reviewedBy: zod.string().nullable(),
+          reviewedAt: zod.date().nullable(),
+          createdAt: zod.date(),
+          updatedAt: zod.date(),
+        }),
+      )
+      .optional()
+      .describe(
+        "Model-proposed findings for human review in a project analysis",
+      ),
+    memory_used: zod
+      .object({
+        confirmedFacts: zod.array(
+          zod.object({
+            id: zod.number(),
+            statement: zod.string(),
+            sourceLabels: zod.array(zod.string()),
+          }),
+        ),
+        openConflicts: zod.array(
+          zod.object({
+            id: zod.number(),
+            statement: zod.string(),
+            sourceLabels: zod.array(zod.string()),
+          }),
+        ),
+      })
+      .optional(),
+  }),
+});
+
+/**
+ * @summary List findings and review states for an owned client project
+ */
+export const ListProjectFindingsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListProjectFindingsResponse = zod.object({
+  findings: zod.array(
+    zod.object({
+      id: zod.number(),
+      projectId: zod.number(),
+      analysisRunId: zod.number().nullable(),
+      statement: zod.string(),
+      type: zod.enum(["fact", "conflict", "open_question"]),
+      status: zod.enum([
+        "pending",
+        "confirmed",
+        "open_conflict",
+        "dismissed",
+        "retired",
+      ]),
+      sourceKind: zod.enum([
+        "image",
+        "project_document",
+        "project_knowledge",
+        "multiple",
+        "manual",
+      ]),
+      sourceRefs: zod.array(zod.string()),
+      sourceLabels: zod.array(zod.string()),
+      createdBy: zod.string(),
+      reviewedBy: zod.string().nullable(),
+      reviewedAt: zod.date().nullable(),
+      createdAt: zod.date(),
+      updatedAt: zod.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Add a manually reviewed project finding
+ */
+export const CreateProjectFindingParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const createProjectFindingBodyStatementMax = 2000;
+
+export const CreateProjectFindingBody = zod.object({
+  statement: zod.string().min(1).max(createProjectFindingBodyStatementMax),
+  type: zod.enum(["fact", "conflict", "open_question"]),
+  status: zod.enum(["confirmed", "open_conflict"]),
+});
+
+/**
+ * @summary Review or update an owned project finding
+ */
+export const UpdateProjectFindingParams = zod.object({
+  id: zod.coerce.number(),
+  findingId: zod.coerce.number(),
+});
+
+export const updateProjectFindingBodyStatementMax = 2000;
+
+export const UpdateProjectFindingBody = zod.object({
+  statement: zod
+    .string()
+    .min(1)
+    .max(updateProjectFindingBodyStatementMax)
+    .optional(),
+  type: zod.enum(["fact", "conflict", "open_question"]).optional(),
+  status: zod.enum(["confirmed", "open_conflict", "dismissed", "retired"]),
+});
+
+export const UpdateProjectFindingResponse = zod.object({
+  id: zod.number(),
+  projectId: zod.number(),
+  analysisRunId: zod.number().nullable(),
+  statement: zod.string(),
+  type: zod.enum(["fact", "conflict", "open_question"]),
+  status: zod.enum([
+    "pending",
+    "confirmed",
+    "open_conflict",
+    "dismissed",
+    "retired",
+  ]),
+  sourceKind: zod.enum([
+    "image",
+    "project_document",
+    "project_knowledge",
+    "multiple",
+    "manual",
+  ]),
+  sourceRefs: zod.array(zod.string()),
+  sourceLabels: zod.array(zod.string()),
+  createdBy: zod.string(),
+  reviewedBy: zod.string().nullable(),
+  reviewedAt: zod.date().nullable(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
  * Receives base64 images and an extraction mode, returns structured context via Claude
  * @summary Analyze one or more images
  */
+export const analyzeImageBodyImagesItemFileNameMax = 255;
 
 export const AnalyzeImageBody = zod.object({
   images: zod
@@ -318,6 +550,11 @@ export const AnalyzeImageBody = zod.object({
       zod.object({
         imageData: zod.string().describe("Base64-encoded image data"),
         mimeType: zod.string().describe("MIME type of the image"),
+        fileName: zod
+          .string()
+          .max(analyzeImageBodyImagesItemFileNameMax)
+          .optional()
+          .describe("Original image file name for project analysis provenance"),
       }),
     )
     .min(1)
@@ -359,4 +596,59 @@ export const AnalyzeImageResponse = zod.object({
   mode_result: zod
     .record(zod.string(), zod.unknown())
     .describe("Mode-specific structured output"),
+  analysisRunId: zod
+    .number()
+    .optional()
+    .describe("Saved project analysis run, when projectId was provided"),
+  candidate_findings: zod
+    .array(
+      zod.object({
+        id: zod.number(),
+        projectId: zod.number(),
+        analysisRunId: zod.number().nullable(),
+        statement: zod.string(),
+        type: zod.enum(["fact", "conflict", "open_question"]),
+        status: zod.enum([
+          "pending",
+          "confirmed",
+          "open_conflict",
+          "dismissed",
+          "retired",
+        ]),
+        sourceKind: zod.enum([
+          "image",
+          "project_document",
+          "project_knowledge",
+          "multiple",
+          "manual",
+        ]),
+        sourceRefs: zod.array(zod.string()),
+        sourceLabels: zod.array(zod.string()),
+        createdBy: zod.string(),
+        reviewedBy: zod.string().nullable(),
+        reviewedAt: zod.date().nullable(),
+        createdAt: zod.date(),
+        updatedAt: zod.date(),
+      }),
+    )
+    .optional()
+    .describe("Model-proposed findings for human review in a project analysis"),
+  memory_used: zod
+    .object({
+      confirmedFacts: zod.array(
+        zod.object({
+          id: zod.number(),
+          statement: zod.string(),
+          sourceLabels: zod.array(zod.string()),
+        }),
+      ),
+      openConflicts: zod.array(
+        zod.object({
+          id: zod.number(),
+          statement: zod.string(),
+          sourceLabels: zod.array(zod.string()),
+        }),
+      ),
+    })
+    .optional(),
 });

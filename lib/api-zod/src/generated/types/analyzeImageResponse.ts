@@ -7,6 +7,8 @@
  */
 import type { AnalyzeImageResponseModeResult } from "./analyzeImageResponseModeResult";
 import type { AnalyzeImageResponseTechnicalDetails } from "./analyzeImageResponseTechnicalDetails";
+import type { ProjectAnalysisMemorySnapshot } from "./projectAnalysisMemorySnapshot";
+import type { ProjectFinding } from "./projectFinding";
 
 export interface AnalyzeImageResponse {
   /** A concise summary of what the image(s) depict */
@@ -19,4 +21,9 @@ export interface AnalyzeImageResponse {
   technical_details: AnalyzeImageResponseTechnicalDetails;
   /** Mode-specific structured output */
   mode_result: AnalyzeImageResponseModeResult;
+  /** Saved project analysis run, when projectId was provided */
+  analysisRunId?: number;
+  /** Model-proposed findings for human review in a project analysis */
+  candidate_findings?: ProjectFinding[];
+  memory_used?: ProjectAnalysisMemorySnapshot;
 }
