@@ -12,10 +12,13 @@ import {
   type ProjectFindingType,
   type ProjectMemorySnapshot,
 } from "@workspace/db";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { getAuth } from "@clerk/express";
 import { logger } from "../logger";
-import { buildProjectDocumentContext } from "../lib/projectDocumentText";
+import {
+  MAX_ANALYSIS_DOCUMENT_CONTEXT_CHARS,
+  buildProjectDocumentContext,
+} from "../lib/projectDocumentText";
 
 const router: IRouter = Router();
 
@@ -222,10 +225,11 @@ function parseCandidateFindingDrafts(
     }
 
     const statement = draft.statement.trim().slice(0, 2000);
+    const normalizedStatement = normalizeFindingStatement(statement);
     const sourceIds = [...new Set(draft.source_ids)];
     if (
       !statement ||
-      seenStatements.has(statement.toLocaleLowerCase()) ||
+      seenStatements.has(normalizedStatement) ||
       sourceIds.length === 0 ||
       sourceIds.some(
         (sourceId) =>
@@ -240,7 +244,7 @@ function parseCandidateFindingDrafts(
       .filter((source): source is CandidateSource => source !== undefined);
     if (sources.length !== sourceIds.length) continue;
 
-    seenStatements.add(statement.toLocaleLowerCase());
+    seenStatements.add(normalizedStatement);
     drafts.push({
       statement,
       type: draft.type as ProjectFindingType,
@@ -249,6 +253,10 @@ function parseCandidateFindingDrafts(
   }
 
   return drafts;
+}
+
+function normalizeFindingStatement(statement: string): string {
+  return statement.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 function toProjectFinding(row: typeof clientProjectFindings.$inferSelect) {
@@ -547,11 +555,20 @@ Use this information only when relevant to the visible image. Clearly distinguis
   contentBlocks.push({ type: "text", text: prompt });
 
   try {
-    const message =
-      error instanceof Error ? error.message : "Unknown error occurred";
+    const message = await anthropic.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 8192,
+      messages: [
+        {
+          role: "user",
+          content: contentBlocks,
+        },
+      ],
+    });
 
-    const block = message.content[0];
-    if (!block || block.type !== "text") {
+    const textBlocks = message.content as Array<{ type: string; text?: string }>;
+    const block = textBlocks.find((candidate) => candidate.type === "text");
+    if (!block || typeof block.text !== "string") {
       res.status(500).json({
         error: "Invalid AI response",
         details: "Claude returned an unexpected response format",
@@ -625,11 +642,37 @@ Use this information only when relevant to the visible image. Clearly distinguis
           })
           .returning();
 
-        const findings = candidateDrafts.length
+        const existingFindings = await tx
+          .select({ statement: clientProjectFindings.statement })
+          .from(clientProjectFindings)
+          .where(
+            and(
+              eq(clientProjectFindings.projectId, projectId),
+              inArray(clientProjectFindings.status, [
+                "pending",
+                "confirmed",
+                "open_conflict",
+                "dismissed",
+              ]),
+            ),
+          );
+        const existingStatements = new Set(
+          existingFindings.map((finding) =>
+            normalizeFindingStatement(finding.statement),
+          ),
+        );
+        const insertableDrafts = candidateDrafts.filter((draft) => {
+          const normalized = normalizeFindingStatement(draft.statement);
+          if (existingStatements.has(normalized)) return false;
+          existingStatements.add(normalized);
+          return true;
+        });
+
+        const findings = insertableDrafts.length
           ? await tx
               .insert(clientProjectFindings)
               .values(
-                candidateDrafts.map((draft) => {
+                insertableDrafts.map((draft) => {
                   const sourceKinds = [
                     ...new Set(draft.sources.map((source) => source.kind)),
                   ];

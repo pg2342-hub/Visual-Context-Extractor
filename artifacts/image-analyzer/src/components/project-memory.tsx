@@ -39,7 +39,8 @@ export function ProjectMemory({ projectId }: { projectId: number }) {
   const grouped: [string, ProjectFinding[]][] = [
     ["Confirmed facts", findings.filter((finding) => finding.status === "confirmed")],
     ["Open conflicts", findings.filter((finding) => finding.status === "open_conflict")],
-    ["Other findings", findings.filter((finding) => !["confirmed", "open_conflict"].includes(finding.status))],
+    ["Pending review", findings.filter((finding) => finding.status === "pending")],
+    ["Other findings", findings.filter((finding) => ["dismissed", "retired"].includes(finding.status))],
   ];
   const changeStatus = (finding: ProjectFinding, next: "confirmed" | "open_conflict" | "dismissed" | "retired") => {
     updateFinding.mutate({ id: projectId, findingId: finding.id, data: { status: next } }, { onSuccess: () => void invalidate() });
