@@ -3,6 +3,8 @@ import { getAuth } from "@clerk/express";
 import {
   CreateProjectFindingBody,
   CreateProjectFindingParams,
+  DeleteProjectAnalysisRunBody,
+  DeleteProjectAnalysisRunParams,
   GetProjectAnalysisRunParams,
   GetProjectAnalysisRunResponse,
   ListProjectAnalysisRunsParams,
@@ -149,6 +151,77 @@ router.get("/projects/:id/analysis-runs/:runId", async (req, res, next) => {
         result,
       }),
     );
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete("/projects/:id/analysis-runs/:runId", async (req, res, next) => {
+  const params = DeleteProjectAnalysisRunParams.safeParse(req.params);
+  const body = DeleteProjectAnalysisRunBody.safeParse(req.body);
+  if (!params.success || params.data.id < 1 || params.data.runId < 1) {
+    res.status(404).json({ error: "Analysis run not found." });
+    return;
+  }
+  if (!body.success) {
+    res.status(400).json({ error: "Choose whether to keep reviewed findings." });
+    return;
+  }
+
+  try {
+    const { id: projectId, runId } = params.data;
+    if (!(await getOwnedProject(projectId, getAuth(req).userId!))) {
+      res.status(404).json({ error: "Analysis run not found." });
+      return;
+    }
+
+    const deleted = await db.transaction(async (tx) => {
+      const [run] = await tx
+        .select()
+        .from(clientProjectAnalysisRuns)
+        .where(and(
+          eq(clientProjectAnalysisRuns.id, runId),
+          eq(clientProjectAnalysisRuns.projectId, projectId),
+        ))
+        .for("update");
+      if (!run) return false;
+
+      if (body.data.keepReviewedFindings) {
+        const findings = await tx
+          .select()
+          .from(clientProjectFindings)
+          .where(and(
+            eq(clientProjectFindings.projectId, projectId),
+            eq(clientProjectFindings.analysisRunId, runId),
+          ))
+          .for("update");
+
+        for (const finding of findings) {
+          if (finding.status === "pending" || !finding.reviewedAt) continue;
+          // Detach before the run's cascading deletion, retaining original
+          // source labels, reviewer and review time for the surviving memory.
+          await tx.update(clientProjectFindings).set({
+            analysisRunId: null,
+            sourceLabels: [
+              ...finding.sourceLabels,
+              `Analysis #${run.id} · ${run.createdAt.toISOString()} (deleted)`,
+            ],
+            updatedAt: new Date(),
+          }).where(eq(clientProjectFindings.id, finding.id));
+        }
+      }
+
+      await tx.delete(clientProjectAnalysisRuns).where(and(
+        eq(clientProjectAnalysisRuns.id, runId),
+        eq(clientProjectAnalysisRuns.projectId, projectId),
+      ));
+      return true;
+    });
+    if (!deleted) {
+      res.status(404).json({ error: "Analysis run not found." });
+      return;
+    }
+    res.status(204).end();
   } catch (error) {
     next(error);
   }

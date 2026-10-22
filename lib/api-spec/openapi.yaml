@@ -331,6 +331,25 @@ paths:
                 $ref: "#/components/schemas/ProjectAnalysisRunDetail"
         "404":
           description: Project or analysis run not found
+    delete:
+      operationId: deleteProjectAnalysisRun
+      tags: [project-history]
+      summary: Permanently delete a saved analysis, optionally retaining reviewed findings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalysisRunDeletion"
+      responses:
+        "204":
+          description: Analysis and unretained findings deleted
+        "400":
+          description: Invalid deletion options
+        "401":
+          description: Sign in required
+        "404":
+          description: Project or analysis run not found
   /projects/{id}/findings:
     parameters:
       - name: id
@@ -738,6 +757,13 @@ components:
           items:
             $ref: "#/components/schemas/ProjectFinding"
       required: [findings]
+    AnalysisRunDeletion:
+      type: object
+      required: [keepReviewedFindings]
+      properties:
+        keepReviewedFindings:
+          type: boolean
+          description: Retain human-reviewed findings with their review metadata and deleted-analysis provenance. Pending candidates are always deleted.
     ProjectFindingInput:
       type: object
       properties:

@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./analysisRunDeletion";
 export * from "./analyzeImageRequest";
 export * from "./analyzeImageRequestMode";
 export * from "./analyzeImageResponse";

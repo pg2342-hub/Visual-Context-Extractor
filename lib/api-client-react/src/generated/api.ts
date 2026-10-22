@@ -17,6 +17,7 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AnalysisRunDeletion,
   AnalyzeImageRequest,
   AnalyzeImageResponse,
   ClientProject,
@@ -1460,6 +1461,95 @@ export function useGetProjectAnalysisRun<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Permanently delete a saved analysis, optionally retaining reviewed findings
+ */
+export const getDeleteProjectAnalysisRunUrl = (id: number, runId: number) => {
+  return `/api/projects/${id}/analysis-runs/${runId}`;
+};
+
+export const deleteProjectAnalysisRun = async (
+  id: number,
+  runId: number,
+  analysisRunDeletion: AnalysisRunDeletion,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteProjectAnalysisRunUrl(id, runId), {
+    ...options,
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(analysisRunDeletion),
+  });
+};
+
+export const getDeleteProjectAnalysisRunMutationOptions = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProjectAnalysisRun>>,
+    TError,
+    { id: number; runId: number; data: BodyType<AnalysisRunDeletion> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteProjectAnalysisRun>>,
+  TError,
+  { id: number; runId: number; data: BodyType<AnalysisRunDeletion> },
+  TContext
+> => {
+  const mutationKey = ["deleteProjectAnalysisRun"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteProjectAnalysisRun>>,
+    { id: number; runId: number; data: BodyType<AnalysisRunDeletion> }
+  > = (props) => {
+    const { id, runId, data } = props ?? {};
+
+    return deleteProjectAnalysisRun(id, runId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteProjectAnalysisRunMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteProjectAnalysisRun>>
+>;
+export type DeleteProjectAnalysisRunMutationBody =
+  BodyType<AnalysisRunDeletion>;
+export type DeleteProjectAnalysisRunMutationError = ErrorType<void>;
+
+/**
+ * @summary Permanently delete a saved analysis, optionally retaining reviewed findings
+ */
+export const useDeleteProjectAnalysisRun = <
+  TError = ErrorType<void>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProjectAnalysisRun>>,
+    TError,
+    { id: number; runId: number; data: BodyType<AnalysisRunDeletion> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteProjectAnalysisRun>>,
+  TError,
+  { id: number; runId: number; data: BodyType<AnalysisRunDeletion> },
+  TContext
+> => {
+  return useMutation(getDeleteProjectAnalysisRunMutationOptions(options));
+};
 
 /**
  * @summary List findings and review states for an owned client project

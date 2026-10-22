@@ -435,6 +435,22 @@ export const GetProjectAnalysisRunResponse = zod.object({
 });
 
 /**
+ * @summary Permanently delete a saved analysis, optionally retaining reviewed findings
+ */
+export const DeleteProjectAnalysisRunParams = zod.object({
+  id: zod.coerce.number(),
+  runId: zod.coerce.number(),
+});
+
+export const DeleteProjectAnalysisRunBody = zod.object({
+  keepReviewedFindings: zod
+    .boolean()
+    .describe(
+      "Retain human-reviewed findings with their review metadata and deleted-analysis provenance. Pending candidates are always deleted.",
+    ),
+});
+
+/**
  * @summary List findings and review states for an owned client project
  */
 export const ListProjectFindingsParams = zod.object({

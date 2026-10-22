@@ -296,6 +296,11 @@ export interface ProjectFindingsResponse {
   findings: ProjectFinding[];
 }
 
+export interface AnalysisRunDeletion {
+  /** Retain human-reviewed findings with their review metadata and deleted-analysis provenance. Pending candidates are always deleted. */
+  keepReviewedFindings: boolean;
+}
+
 export type ProjectFindingInputStatus =
   (typeof ProjectFindingInputStatus)[keyof typeof ProjectFindingInputStatus];
 

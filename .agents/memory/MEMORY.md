@@ -1,1 +1,2 @@
 - [Artifact Vite port collisions](artifact-vite-port-collisions.md) — a stale Vite process can hold the preview port while a restarted server silently shifts to another port.
+- [History deletion and reviewed memory](history-deletion-memory.md) — human-reviewed knowledge may outlive its originating analysis; historical context snapshots stay unchanged.
