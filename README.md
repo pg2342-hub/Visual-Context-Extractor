@@ -2,6 +2,8 @@
 
 Turns screenshots and system diagrams into source-cited project findings with Claude, so a consultant can build up a reviewed picture of a client's systems one image at a time.
 
+**Live app:** https://context-extractor.replit.app/ (sign-in required)
+
 ## What it does
 
 Upload one or more images (PNG, JPEG, WebP or GIF) and pick an analysis mode. Every mode returns a summary, any readable text, and tags, plus a structured result for that mode.
