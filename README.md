@@ -2,7 +2,7 @@
 
 Turns screenshots and system diagrams into source-cited project findings with Claude, so a consultant can build up a reviewed picture of a client's systems one image at a time.
 
-**Live app:** https://context-extractor.replit.app/ (sign-in required)
+**Live app:** https://context-extractor.replit.app/ (sign in to use client projects)
 
 ## What it does
 
