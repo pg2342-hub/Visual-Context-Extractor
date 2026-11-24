@@ -68,6 +68,15 @@ export function MarkedImage({
   const placed = findings.flatMap(({ finding, n }) =>
     (finding.regions ?? []).filter((r) => r.imageRef === imageRef).map((region, i) => ({ finding, n, region, key: `${finding.id}-${i}` })),
   );
+  // Marks whose boxes share a top-right corner would sit on top of each other: line them up
+  // side by side instead, so every number stays visible.
+  const cornerSlot = new Map<string, number>();
+  const slotOf = placed.map(({ region }) => {
+    const key = `${Math.round((region.x + region.width) * 50)}:${Math.round(region.y * 50)}`;
+    const slot = cornerSlot.get(key) ?? 0;
+    cornerSlot.set(key, slot + 1);
+    return slot;
+  });
   const placedIds = new Set(placed.map((p) => p.finding.id));
   const unplaced = findings.filter(({ finding }) => !placedIds.has(finding.id));
   const anyActive = active.length > 0;
@@ -78,7 +87,9 @@ export function MarkedImage({
 
       {rect && placed.length > 0 && (
         <div className="pointer-events-none absolute" style={rect}>
-          {placed.map(({ finding, n, region, key }) => {
+          {placed.map(({ finding, n, region, key }, index) => {
+            const slot = slotOf[index] ?? 0;
+            const markStep = large ? 30 : 25;
             const on = active.includes(finding.id);
             const done = finding.status !== 'pending';
             return (
@@ -105,9 +116,9 @@ export function MarkedImage({
                   type="button"
                   className={cn(
                     'pointer-events-auto absolute rounded-full outline-none focus-visible:ring-2 focus-visible:ring-fact',
-                    region.x + region.width > 0.95 ? 'right-[3px]' : '-right-[11px]',
                     region.y < 0.05 ? 'top-[3px]' : '-top-[11px]',
                   )}
+                  style={{ right: (region.x + region.width > 0.95 ? 3 : -11) + slot * markStep }}
                   aria-label={`Finding ${n}, ${KIND_LABEL[finding.type]}: ${finding.statement}`}
                   title={finding.statement}
                   onMouseEnter={() => onFocusFinding?.(finding.id)}
