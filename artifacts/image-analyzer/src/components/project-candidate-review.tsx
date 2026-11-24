@@ -17,10 +17,12 @@ export function ProjectCandidateReview({
   projectId,
   candidates,
   onHighlight,
+  activeId = null,
 }: {
   projectId: number;
   candidates: ProjectFinding[];
-  onHighlight?: (refs: string[]) => void;
+  onHighlight?: (id: number | null) => void;
+  activeId?: number | null;
 }) {
   const queryClient = useQueryClient();
   const mutation = useUpdateProjectFinding();
@@ -97,11 +99,12 @@ export function ProjectCandidateReview({
           return (
             <li
               key={item.id}
+              id={`finding-${item.id}`}
               data-testid={`candidate-${item.id}`}
-              onMouseEnter={() => onHighlight?.(item.sourceRefs)}
-              onMouseLeave={() => onHighlight?.([])}
-              onFocus={() => onHighlight?.(item.sourceRefs)}
-              className="grid grid-cols-[22px_minmax(0,1fr)] gap-3 border-t border-line px-4 py-4 first:border-t-0"
+              onMouseEnter={() => onHighlight?.(item.id)}
+              onMouseLeave={() => onHighlight?.(null)}
+              onFocus={() => onHighlight?.(item.id)}
+              className={cn("grid scroll-mt-32 grid-cols-[22px_minmax(0,1fr)] gap-3 border-t border-line px-4 py-4 transition-colors first:border-t-0", activeId === item.id && "bg-canvas")}
             >
               <FindingMark type={draft.type} n={n} muted={Boolean(verdict)} className="mt-px" />
               <div className="min-w-0">

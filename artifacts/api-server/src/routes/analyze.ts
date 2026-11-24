@@ -15,6 +15,7 @@ import {
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { getAuth } from "@clerk/express";
 import { buildProjectMemorySnapshot, buildReviewedMemoryContext } from "../lib/projectFindingsMemory";
+import { parseFindingRegions, type FindingImageRegion } from "../lib/findingRegions";
 import { logger } from "../logger";
 import {
   MAX_ANALYSIS_DOCUMENT_CONTEXT_CHARS,
@@ -168,6 +169,7 @@ interface CandidateFindingDraft {
   statement: string;
   type: ProjectFindingType;
   sources: CandidateSource[];
+  regions: FindingImageRegion[];
 }
 
 function getImageName(fileName: unknown, index: number): string {
@@ -194,7 +196,8 @@ function buildProjectFindingsInstructions(sources: CandidateSource[]): string {
 PROJECT FINDINGS OUTPUT (part of the same JSON object):
 Add a top-level "candidate_findings" array. Return up to 8 concise, atomic, reusable statements that are directly supported by the supplied project images, project documents, or non-empty project knowledge. Use [] when there is nothing reliable to carry forward. Do not turn recommendations, guesses, or generic advice into findings.
 Each item must have this exact shape:
-{"statement":"one specific reusable statement","type":"fact|conflict|open_question","source_ids":["IMG-1"]}
+{"statement":"one specific reusable statement","type":"fact|conflict|open_question","source_ids":["IMG-1"],"regions":[{"source_id":"IMG-1","box":[x,y,width,height]}]}
+"regions" says where in each cited image the finding can be seen. Each box is [x, y, width, height] as fractions from 0 to 1 of that image's width and height, measured from the top-left corner, tightly around the visible element or text that supports the finding. Give one box per cited image where the finding is visible, and only for IMG sources. Use [] when the finding cannot be pointed to in an image, for example when it rests on a document or project knowledge, or on the image as a whole.
 Use "fact" for a supported statement, "conflict" only for a direct disagreement between sources, and "open_question" for an important unresolved question. For a conflict, cite every source needed to show the discrepancy. Never invent or alter a source ID. Do not cite approved connection metadata as a finding source.
 Available source IDs:
 ${sourceList}`;
@@ -246,10 +249,14 @@ function parseCandidateFindingDrafts(
     if (sources.length !== sourceIds.length) continue;
 
     seenStatements.add(normalizedStatement);
+    const citedImages = new Set(
+      sources.filter((source) => source.kind === "image").map((source) => source.id),
+    );
     drafts.push({
       statement,
       type: draft.type as ProjectFindingType,
       sources,
+      regions: parseFindingRegions(draft.regions, citedImages),
     });
   }
 
@@ -271,6 +278,7 @@ function toProjectFinding(row: typeof clientProjectFindings.$inferSelect) {
     sourceKind: row.sourceKind,
     sourceRefs: row.sourceRefs,
     sourceLabels: row.sourceLabels,
+    regions: row.regions ?? [],
     createdBy: row.createdBy,
     reviewedBy: row.reviewedBy,
     reviewedAt: row.reviewedAt,
@@ -646,6 +654,7 @@ Use this information only when relevant to the visible image. Clearly distinguis
                         : ("multiple" as const),
                     sourceRefs: draft.sources.map((source) => source.id),
                     sourceLabels: draft.sources.map((source) => source.label),
+                    regions: draft.regions,
                     createdBy: projectOwnerId!,
                   };
                 }),

@@ -341,6 +341,18 @@ export const GetProjectAnalysisRunParams = zod.object({
   runId: zod.coerce.number(),
 });
 
+export const getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemXMin = 0;
+export const getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemXMax = 1;
+
+export const getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemYMin = 0;
+export const getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemYMax = 1;
+
+export const getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemWidthMin = 0;
+export const getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemWidthMax = 1;
+
+export const getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemHeightMin = 0;
+export const getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemHeightMax = 1;
+
 export const GetProjectAnalysisRunResponse = zod.object({
   id: zod.number(),
   projectId: zod.number(),
@@ -402,6 +414,50 @@ export const GetProjectAnalysisRunResponse = zod.object({
           ]),
           sourceRefs: zod.array(zod.string()),
           sourceLabels: zod.array(zod.string()),
+          regions: zod
+            .array(
+              zod.object({
+                imageRef: zod
+                  .string()
+                  .describe("Image source ID, such as IMG-1"),
+                x: zod
+                  .number()
+                  .min(
+                    getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemXMin,
+                  )
+                  .max(
+                    getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemXMax,
+                  ),
+                y: zod
+                  .number()
+                  .min(
+                    getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemYMin,
+                  )
+                  .max(
+                    getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemYMax,
+                  ),
+                width: zod
+                  .number()
+                  .min(
+                    getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemWidthMin,
+                  )
+                  .max(
+                    getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemWidthMax,
+                  ),
+                height: zod
+                  .number()
+                  .min(
+                    getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemHeightMin,
+                  )
+                  .max(
+                    getProjectAnalysisRunResponseResultCandidateFindingsItemRegionsItemHeightMax,
+                  ),
+              }),
+            )
+            .optional()
+            .describe(
+              "Where in each cited image the finding is visible, as boxes in fractions of the image size. Empty when the model could not place it.",
+            ),
           createdBy: zod.string(),
           reviewedBy: zod.string().nullable(),
           reviewedAt: zod.date().nullable(),
@@ -469,6 +525,18 @@ export const ListProjectFindingsParams = zod.object({
   id: zod.coerce.number(),
 });
 
+export const listProjectFindingsResponseFindingsItemRegionsItemXMin = 0;
+export const listProjectFindingsResponseFindingsItemRegionsItemXMax = 1;
+
+export const listProjectFindingsResponseFindingsItemRegionsItemYMin = 0;
+export const listProjectFindingsResponseFindingsItemRegionsItemYMax = 1;
+
+export const listProjectFindingsResponseFindingsItemRegionsItemWidthMin = 0;
+export const listProjectFindingsResponseFindingsItemRegionsItemWidthMax = 1;
+
+export const listProjectFindingsResponseFindingsItemRegionsItemHeightMin = 0;
+export const listProjectFindingsResponseFindingsItemRegionsItemHeightMax = 1;
+
 export const ListProjectFindingsResponse = zod.object({
   findings: zod.array(
     zod.object({
@@ -493,6 +561,32 @@ export const ListProjectFindingsResponse = zod.object({
       ]),
       sourceRefs: zod.array(zod.string()),
       sourceLabels: zod.array(zod.string()),
+      regions: zod
+        .array(
+          zod.object({
+            imageRef: zod.string().describe("Image source ID, such as IMG-1"),
+            x: zod
+              .number()
+              .min(listProjectFindingsResponseFindingsItemRegionsItemXMin)
+              .max(listProjectFindingsResponseFindingsItemRegionsItemXMax),
+            y: zod
+              .number()
+              .min(listProjectFindingsResponseFindingsItemRegionsItemYMin)
+              .max(listProjectFindingsResponseFindingsItemRegionsItemYMax),
+            width: zod
+              .number()
+              .min(listProjectFindingsResponseFindingsItemRegionsItemWidthMin)
+              .max(listProjectFindingsResponseFindingsItemRegionsItemWidthMax),
+            height: zod
+              .number()
+              .min(listProjectFindingsResponseFindingsItemRegionsItemHeightMin)
+              .max(listProjectFindingsResponseFindingsItemRegionsItemHeightMax),
+          }),
+        )
+        .optional()
+        .describe(
+          "Where in each cited image the finding is visible, as boxes in fractions of the image size. Empty when the model could not place it.",
+        ),
       createdBy: zod.string(),
       reviewedBy: zod.string().nullable(),
       reviewedAt: zod.date().nullable(),
@@ -539,6 +633,18 @@ export const UpdateProjectFindingBody = zod.object({
     .optional(),
 });
 
+export const updateProjectFindingResponseRegionsItemXMin = 0;
+export const updateProjectFindingResponseRegionsItemXMax = 1;
+
+export const updateProjectFindingResponseRegionsItemYMin = 0;
+export const updateProjectFindingResponseRegionsItemYMax = 1;
+
+export const updateProjectFindingResponseRegionsItemWidthMin = 0;
+export const updateProjectFindingResponseRegionsItemWidthMax = 1;
+
+export const updateProjectFindingResponseRegionsItemHeightMin = 0;
+export const updateProjectFindingResponseRegionsItemHeightMax = 1;
+
 export const UpdateProjectFindingResponse = zod.object({
   id: zod.number(),
   projectId: zod.number(),
@@ -561,6 +667,32 @@ export const UpdateProjectFindingResponse = zod.object({
   ]),
   sourceRefs: zod.array(zod.string()),
   sourceLabels: zod.array(zod.string()),
+  regions: zod
+    .array(
+      zod.object({
+        imageRef: zod.string().describe("Image source ID, such as IMG-1"),
+        x: zod
+          .number()
+          .min(updateProjectFindingResponseRegionsItemXMin)
+          .max(updateProjectFindingResponseRegionsItemXMax),
+        y: zod
+          .number()
+          .min(updateProjectFindingResponseRegionsItemYMin)
+          .max(updateProjectFindingResponseRegionsItemYMax),
+        width: zod
+          .number()
+          .min(updateProjectFindingResponseRegionsItemWidthMin)
+          .max(updateProjectFindingResponseRegionsItemWidthMax),
+        height: zod
+          .number()
+          .min(updateProjectFindingResponseRegionsItemHeightMin)
+          .max(updateProjectFindingResponseRegionsItemHeightMax),
+      }),
+    )
+    .optional()
+    .describe(
+      "Where in each cited image the finding is visible, as boxes in fractions of the image size. Empty when the model could not place it.",
+    ),
   createdBy: zod.string(),
   reviewedBy: zod.string().nullable(),
   reviewedAt: zod.date().nullable(),
@@ -614,6 +746,18 @@ export const AnalyzeImageBody = zod.object({
     ),
 });
 
+export const analyzeImageResponseCandidateFindingsItemRegionsItemXMin = 0;
+export const analyzeImageResponseCandidateFindingsItemRegionsItemXMax = 1;
+
+export const analyzeImageResponseCandidateFindingsItemRegionsItemYMin = 0;
+export const analyzeImageResponseCandidateFindingsItemRegionsItemYMax = 1;
+
+export const analyzeImageResponseCandidateFindingsItemRegionsItemWidthMin = 0;
+export const analyzeImageResponseCandidateFindingsItemRegionsItemWidthMax = 1;
+
+export const analyzeImageResponseCandidateFindingsItemRegionsItemHeightMin = 0;
+export const analyzeImageResponseCandidateFindingsItemRegionsItemHeightMax = 1;
+
 export const AnalyzeImageResponse = zod.object({
   summary: zod
     .string()
@@ -662,6 +806,40 @@ export const AnalyzeImageResponse = zod.object({
         ]),
         sourceRefs: zod.array(zod.string()),
         sourceLabels: zod.array(zod.string()),
+        regions: zod
+          .array(
+            zod.object({
+              imageRef: zod.string().describe("Image source ID, such as IMG-1"),
+              x: zod
+                .number()
+                .min(analyzeImageResponseCandidateFindingsItemRegionsItemXMin)
+                .max(analyzeImageResponseCandidateFindingsItemRegionsItemXMax),
+              y: zod
+                .number()
+                .min(analyzeImageResponseCandidateFindingsItemRegionsItemYMin)
+                .max(analyzeImageResponseCandidateFindingsItemRegionsItemYMax),
+              width: zod
+                .number()
+                .min(
+                  analyzeImageResponseCandidateFindingsItemRegionsItemWidthMin,
+                )
+                .max(
+                  analyzeImageResponseCandidateFindingsItemRegionsItemWidthMax,
+                ),
+              height: zod
+                .number()
+                .min(
+                  analyzeImageResponseCandidateFindingsItemRegionsItemHeightMin,
+                )
+                .max(
+                  analyzeImageResponseCandidateFindingsItemRegionsItemHeightMax,
+                ),
+            }),
+          )
+          .optional()
+          .describe(
+            "Where in each cited image the finding is visible, as boxes in fractions of the image size. Empty when the model could not place it.",
+          ),
         createdBy: zod.string(),
         reviewedBy: zod.string().nullable(),
         reviewedAt: zod.date().nullable(),

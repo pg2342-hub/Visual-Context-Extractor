@@ -17,6 +17,7 @@ export * from "./clientProjectInput";
 export * from "./clientProjectsResponse";
 export * from "./clientProjectUpdate";
 export * from "./errorResponse";
+export * from "./findingImageRegion";
 export * from "./healthStatus";
 export * from "./imageInput";
 export * from "./projectAnalysisMemoryEntry";

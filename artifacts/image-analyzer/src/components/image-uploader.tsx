@@ -4,7 +4,8 @@ import { ImagePlus, Plus, X } from 'lucide-react';
 import type { ProjectFinding } from '@workspace/api-client-react';
 import { cn, isValidImageType } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { FindingMark, Spinner } from '@/components/marks';
+import { Spinner } from '@/components/marks';
+import { MarkedImage } from '@/components/marked-image';
 import type { AnalysisMode } from '@/hooks/use-analyze';
 
 export const MODES: { value: AnalysisMode; label: string; short: string; description: string; action: string }[] = [
@@ -47,7 +48,8 @@ interface ImageUploaderProps {
   onAnalyze: () => void;
   mode: AnalysisMode;
   findings?: ProjectFinding[];
-  highlight?: string[];
+  activeFinding?: number | null;
+  onFocusFinding?: (id: number | null) => void;
 }
 
 export function ImageUploader({
@@ -59,7 +61,8 @@ export function ImageUploader({
   onAnalyze,
   mode,
   findings = [],
-  highlight = [],
+  activeFinding = null,
+  onFocusFinding,
 }: ImageUploaderProps) {
   const { toast } = useToast();
 
@@ -165,8 +168,8 @@ export function ImageUploader({
           <div className={cn('dot-grid grid gap-4 p-4 sm:p-5', single ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3')}>
             {selectedFiles.map((file, idx) => {
               const ref = `IMG-${idx + 1}`;
-              const cited = findings.map((f, i) => ({ f, n: i + 1 })).filter(({ f }) => f.sourceRefs.includes(ref));
-              const lit = highlight.includes(ref);
+              const cited = findings.map((finding, i) => ({ finding, n: i + 1 })).filter(({ finding }) => finding.sourceRefs.includes(ref));
+              const lit = cited.some(({ finding }) => finding.id === activeFinding);
               return (
                 <figure
                   key={`${file.name}-${file.size}-${idx}`}
@@ -176,21 +179,20 @@ export function ImageUploader({
                   )}
                 >
                   <div className={cn('relative flex items-center justify-center bg-subtle', single ? 'max-h-[560px] min-h-[280px]' : 'aspect-[4/3]')}>
-                    <img
+                    <MarkedImage
                       src={urls[idx]}
                       alt={file.name}
-                      className={cn('max-h-[560px] w-full object-contain transition-opacity', !single && 'h-full', isAnalyzing && 'opacity-60')}
+                      imageRef={ref}
+                      findings={cited}
+                      active={activeFinding !== null ? [activeFinding] : []}
+                      dimmed={isAnalyzing}
+                      onFocusFinding={onFocusFinding}
+                      className={single ? 'w-full' : 'h-full w-full'}
+                      imgClassName={cn('block w-full object-contain', single ? 'max-h-[560px]' : 'h-full')}
                     />
                     {isAnalyzing && (
                       <div className="pointer-events-none absolute inset-0 overflow-hidden">
                         <div className="absolute inset-x-0 h-24 animate-[scan_1.8s_cubic-bezier(.16,1,.3,1)_infinite] bg-gradient-to-b from-transparent to-fact/15" />
-                      </div>
-                    )}
-                    {cited.length > 0 && (
-                      <div className="absolute right-2.5 top-2.5 flex flex-wrap justify-end gap-1">
-                        {cited.map(({ f, n }) => (
-                          <FindingMark key={f.id} type={f.type} n={n} muted={f.status !== 'pending'} className="drop-shadow-sm" />
-                        ))}
                       </div>
                     )}
                   </div>

@@ -14,7 +14,7 @@ import { FindingMark } from '@/components/marks';
 export default function Home() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [mode, setMode] = useState<AnalysisMode>('summarize');
-  const [highlight, setHighlight] = useState<string[]>([]);
+  const [activeFinding, setActiveFinding] = useState<number | null>(null);
   const { selectedProject } = useProjects();
   const { isSignedIn } = useUser();
 
@@ -82,7 +82,8 @@ export default function Home() {
             onAnalyze={handleAnalyze}
             mode={mode}
             findings={candidates}
-            highlight={highlight}
+            activeFinding={activeFinding}
+            onFocusFinding={setActiveFinding}
           />
 
           <AnimatePresence>
@@ -121,7 +122,7 @@ export default function Home() {
 
         <aside className="flex flex-col gap-4 lg:sticky lg:top-[124px]">
           {result && selectedProject && candidates.length > 0 ? (
-            <ProjectCandidateReview projectId={selectedProject.id} candidates={candidates} onHighlight={setHighlight} />
+            <ProjectCandidateReview projectId={selectedProject.id} candidates={candidates} onHighlight={setActiveFinding} activeId={activeFinding} />
           ) : (
             <FindingsPlaceholder
               signedIn={Boolean(isSignedIn)}

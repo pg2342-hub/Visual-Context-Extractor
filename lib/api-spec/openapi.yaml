@@ -721,6 +721,17 @@ components:
     ProjectFindingSourceKind:
       type: string
       enum: [image, project_document, project_knowledge, multiple, manual]
+    FindingImageRegion:
+      type: object
+      properties:
+        imageRef:
+          type: string
+          description: Image source ID, such as IMG-1
+        x: { type: number, minimum: 0, maximum: 1 }
+        y: { type: number, minimum: 0, maximum: 1 }
+        width: { type: number, minimum: 0, maximum: 1 }
+        height: { type: number, minimum: 0, maximum: 1 }
+      required: [imageRef, x, y, width, height]
     ProjectFinding:
       type: object
       properties:
@@ -740,6 +751,11 @@ components:
         sourceLabels:
           type: array
           items: { type: string }
+        regions:
+          type: array
+          description: Where in each cited image the finding is visible, as boxes in fractions of the image size. Empty when the model could not place it.
+          items:
+            $ref: "#/components/schemas/FindingImageRegion"
         createdBy: { type: string }
         reviewedBy: { type: ["string", "null"] }
         reviewedAt: { type: ["string", "null"], format: date-time }

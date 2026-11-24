@@ -243,6 +243,31 @@ export const ProjectFindingSourceKind = {
   manual: "manual",
 } as const;
 
+export interface FindingImageRegion {
+  /** Image source ID, such as IMG-1 */
+  imageRef: string;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  x: number;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  y: number;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  width: number;
+  /**
+   * @minimum 0
+   * @maximum 1
+   */
+  height: number;
+}
+
 export interface ProjectFinding {
   id: number;
   projectId: number;
@@ -254,6 +279,8 @@ export interface ProjectFinding {
   sourceKind: ProjectFindingSourceKind;
   sourceRefs: string[];
   sourceLabels: string[];
+  /** Where in each cited image the finding is visible, as boxes in fractions of the image size. Empty when the model could not place it. */
+  regions?: FindingImageRegion[];
   createdBy: string;
   /** @nullable */
   reviewedBy: string | null;

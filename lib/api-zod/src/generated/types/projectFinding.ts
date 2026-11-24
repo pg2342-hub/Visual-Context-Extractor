@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { FindingImageRegion } from "./findingImageRegion";
 import type { ProjectFindingSourceKind } from "./projectFindingSourceKind";
 import type { ProjectFindingStatus } from "./projectFindingStatus";
 import type { ProjectFindingType } from "./projectFindingType";
@@ -20,6 +21,8 @@ export interface ProjectFinding {
   sourceKind: ProjectFindingSourceKind;
   sourceRefs: string[];
   sourceLabels: string[];
+  /** Where in each cited image the finding is visible, as boxes in fractions of the image size. Empty when the model could not place it. */
+  regions?: FindingImageRegion[];
   createdBy: string;
   /** @nullable */
   reviewedBy: string | null;

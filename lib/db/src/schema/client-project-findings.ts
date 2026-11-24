@@ -26,6 +26,15 @@ export type ProjectFindingSourceKind =
   | "multiple"
   | "manual";
 
+/** Where a finding is visible in a cited image, as fractions (0 to 1) of the image's width and height. */
+export interface FindingImageRegion {
+  imageRef: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export const clientProjectFindings = pgTable(
   "client_project_findings",
   {
@@ -43,6 +52,7 @@ export const clientProjectFindings = pgTable(
     sourceKind: text("source_kind").$type<ProjectFindingSourceKind>().notNull(),
     sourceRefs: jsonb("source_refs").$type<string[]>().notNull(),
     sourceLabels: jsonb("source_labels").$type<string[]>().notNull(),
+    regions: jsonb("regions").$type<FindingImageRegion[]>().notNull().default([]),
     createdBy: text("created_by").notNull(),
     reviewedBy: text("reviewed_by"),
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),

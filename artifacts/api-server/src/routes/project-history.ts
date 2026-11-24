@@ -54,6 +54,7 @@ function toProjectFinding(row: typeof clientProjectFindings.$inferSelect) {
     sourceKind: row.sourceKind,
     sourceRefs: row.sourceRefs,
     sourceLabels: row.sourceLabels,
+    regions: row.regions ?? [],
     createdBy: row.createdBy,
     reviewedBy: row.reviewedBy,
     reviewedAt: row.reviewedAt,
