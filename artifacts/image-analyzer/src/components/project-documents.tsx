@@ -127,11 +127,11 @@ export function ProjectDocuments({ projectId }: { projectId: number }) {
   };
 
   return (
-    <div className="mt-8 border-t border-slate-200 pt-6">
+    <div>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h4 className="text-base font-semibold text-slate-900">Reference documents</h4>
-          <p className="mt-1 max-w-xl text-sm leading-6 text-slate-500">
+          <h4 className="text-base font-semibold text-ink">Reference documents</h4>
+          <p className="mt-1 max-w-xl text-sm leading-6 text-ink-2">
             Add client documentation for the analyzer to use as background. Supported formats:
             {" "}{supportedTypesLabel}. Maximum 10 MB each, up to {MAX_DOCUMENTS} files.
           </p>
@@ -149,7 +149,7 @@ export function ProjectDocuments({ projectId }: { projectId: number }) {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={isBusy || documents.length >= MAX_DOCUMENTS}
-          className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3.5 py-2.5 text-sm font-semibold text-blue-800 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex shrink-0 items-center gap-2 rounded-md border border-line-2 bg-surface px-3.5 py-2.5 text-sm font-medium text-ink hover:bg-subtle disabled:cursor-not-allowed disabled:opacity-50"
         >
           {uploadMutation.isPending
             ? <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -159,25 +159,25 @@ export function ProjectDocuments({ projectId }: { projectId: number }) {
       </div>
 
       {(mutationError || documentsQuery.error) && (
-        <p role="alert" className="mt-4 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-800">
+        <p role="alert" className="mt-4 rounded-md bg-conflict-bg px-3 py-2.5 text-sm text-conflict">
           {mutationError || (documentsQuery.error as Error).message}
         </p>
       )}
 
       {documentsQuery.isPending ? (
-        <p className="mt-5 text-sm text-slate-500">Loading reference documents…</p>
+        <p className="mt-5 text-sm text-ink-2">Loading reference documents…</p>
       ) : documentsQuery.isError ? null : documents.length === 0 ? (
-        <p className="mt-5 rounded-xl border border-dashed border-slate-300 px-4 py-5 text-sm text-slate-500">
+        <p className="mt-5 rounded-xl border border-dashed border-line-2 px-4 py-5 text-sm text-ink-2">
           No reference documents have been added to this project.
         </p>
       ) : (
-        <ul className="mt-5 divide-y divide-slate-100 rounded-xl border border-slate-200">
+        <ul className="mt-5 divide-y divide-line rounded-xl border border-line">
           {documents.map((document) => (
             <li key={document.id} className="flex items-center gap-3 px-4 py-3">
-              <FileText className="h-5 w-5 shrink-0 text-blue-700" />
+              <FileText className="h-5 w-5 shrink-0 text-ink-2" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-slate-800">{document.originalName}</p>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="truncate text-sm font-medium text-ink">{document.originalName}</p>
+                <p className="mt-0.5 text-xs text-ink-2">
                   {formatBytes(document.sizeBytes)} · Added{" "}
                   {new Date(document.createdAt).toLocaleDateString()}
                 </p>
@@ -192,7 +192,7 @@ export function ProjectDocuments({ projectId }: { projectId: number }) {
                     removeMutation.mutate(document.id);
                   }
                 }}
-                className="rounded-lg p-2 text-slate-400 hover:bg-red-50 hover:text-red-700 disabled:opacity-50"
+                className="rounded-md p-2 text-ink-3 hover:bg-conflict-bg hover:text-conflict disabled:opacity-50"
               >
                 {removeMutation.isPending && removeMutation.variables === document.id
                   ? <LoaderCircle className="h-4 w-4 animate-spin" />

@@ -1,32 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  AlignLeft,
-  Tags,
-  Camera,
-  Sun,
-  SlidersHorizontal,
-  Sparkles,
-  FileText,
-  BarChart2,
-  Code2,
-  Layers,
-  Copy,
-  Check,
-  Table2,
-  Lightbulb,
-  Bug,
-  Wrench,
-  Network,
-  GitBranch,
-  ShieldAlert,
-  ArrowRightLeft,
-} from 'lucide-react';
+import { Check, Copy } from 'lucide-react';
 import type { AnalysisResponse, AnalysisMode } from '@/hooks/use-analyze';
-import { ProjectCandidateReview } from '@/components/project-candidate-review';
+import { FindingMark, KIND_LABEL, SourceChip, sourceText } from '@/components/marks';
+import { cn } from '@/lib/utils';
 
 interface AnalysisResultsProps {
   data: AnalysisResponse;
@@ -35,72 +12,150 @@ interface AnalysisResultsProps {
   projectId?: number;
 }
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.05 } } };
+const item = {
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const } },
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } },
-};
-
-function Section({ children, className }: { children: React.ReactNode; className?: string }) {
+function Block({
+  title,
+  count,
+  action,
+  children,
+  flush = false,
+  className,
+}: {
+  title: string;
+  count?: number;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  flush?: boolean;
+  className?: string;
+}) {
   return (
-    <motion.div variants={itemVariants} className={className}>
-      {children}
-    </motion.div>
+    <motion.section variants={item} className={cn('overflow-hidden rounded-xl border border-line bg-surface shadow-card', className)}>
+      <header className="flex min-h-11 items-center gap-2 border-b border-line px-4 py-2">
+        <h3 className="text-[14px] font-semibold tracking-[-0.01em] text-ink">{title}</h3>
+        {count !== undefined && <span className="font-mono text-[12px] text-ink-3">{count}</span>}
+        {action && <div className="ml-auto">{action}</div>}
+      </header>
+      <div className={flush ? '' : 'px-4 py-4'}>{children}</div>
+    </motion.section>
   );
 }
 
-function SectionCard({ children, className }: { children: React.ReactNode; className?: string }) {
+function Bullets({ items }: { items: string[] }) {
   return (
-    <Card className={`rounded-[18px] border-[#e3ecee] bg-white/85 shadow-[0_8px_26px_rgba(39,75,95,.035)] ${className ?? ''}`}>
-      <CardContent className="p-5 sm:p-6">{children}</CardContent>
-    </Card>
+    <ul className="space-y-2">
+      {items.map((text, i) => (
+        <li key={i} className="grid grid-cols-[14px_minmax(0,1fr)] gap-2 text-[14px] leading-6 text-ink">
+          <span aria-hidden="true" className="mt-[11px] h-[3px] w-[3px] rounded-full bg-ink-3" />
+          {text}
+        </li>
+      ))}
+    </ul>
   );
 }
 
-function SectionHeader({ icon, title, color = 'text-slate-500' }: { icon: React.ReactNode; title: string; color?: string }) {
+function Steps({ items }: { items: string[] }) {
   return (
-    <div className={`mb-3 flex items-center gap-2 ${color} text-[#35505d]`}>
-      <span className={color}>{icon}</span>
-      <h3 className="font-semibold">{title}</h3>
+    <ol className="space-y-2.5">
+      {items.map((text, i) => (
+        <li key={i} className="grid grid-cols-[22px_minmax(0,1fr)] gap-2.5 text-[14px] leading-6 text-ink">
+          <span className="mt-[2px] grid h-5 w-5 place-items-center rounded-full border border-line-2 font-mono text-[11px] text-ink-2">{i + 1}</span>
+          {text}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function Pill({ children, tone = 'neutral' }: { children: React.ReactNode; tone?: 'neutral' | 'red' | 'amber' | 'blue' | 'green' }) {
+  const tones = {
+    neutral: 'border-line-2 text-ink-2',
+    red: 'border-transparent bg-conflict-bg text-conflict',
+    amber: 'border-transparent bg-question-bg text-question',
+    blue: 'border-transparent bg-fact-bg text-fact',
+    green: 'border-transparent bg-ok-bg text-ok',
+  } as const;
+  return <span className={cn('inline-flex h-[22px] shrink-0 items-center rounded-full border px-2 text-[12px] font-medium', tones[tone])}>{children}</span>;
+}
+
+function CopyButton({ text, label = 'Copy' }: { text: string; label?: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        void navigator.clipboard.writeText(text).then(() => {
+          setCopied(true);
+          window.setTimeout(() => setCopied(false), 1800);
+        });
+      }}
+      className="inline-flex h-7 items-center gap-1.5 rounded-md border border-line-2 px-2.5 text-[12.5px] font-medium text-ink transition-colors hover:bg-subtle"
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-ok" /> : <Copy className="h-3.5 w-3.5" />}
+      {copied ? 'Copied' : label}
+    </button>
+  );
+}
+
+function Table({ head, rows }: { head: string[]; rows: React.ReactNode[][] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[560px] border-collapse text-left text-[14px]">
+        <thead>
+          <tr className="border-b border-line bg-canvas">
+            {head.map((h) => (
+              <th key={h} scope="col" className="whitespace-nowrap px-4 py-2 text-[12.5px] font-medium text-ink-2">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="tabular">
+          {rows.map((cells, i) => (
+            <tr key={i} className="border-b border-line last:border-0 transition-colors hover:bg-canvas">
+              {cells.map((cell, j) => (
+                <td key={j} className={cn('px-4 py-2.5 align-top', j === 0 ? 'font-medium text-ink' : 'text-ink-2')}>{cell}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
 
-// ---- Mode-specific result renderers ----
+function CodeBlock({ code, language, caption }: { code: string; language?: string; caption?: string }) {
+  return (
+    <motion.figure variants={item} className="m-0 overflow-hidden rounded-xl border border-line bg-surface shadow-card">
+      <div className="flex h-11 items-center justify-between border-b border-line px-4">
+        <span className="font-mono text-[12.5px] text-ink-2">{language || 'code'}</span>
+        <CopyButton text={code} />
+      </div>
+      <pre className="max-h-96 overflow-auto bg-canvas px-4 py-3.5 font-mono text-[13px] leading-[1.65] text-ink"><code>{code}</code></pre>
+      {caption && <figcaption className="border-t border-line px-4 py-2.5 text-[13px] text-ink-2">{caption}</figcaption>}
+    </motion.figure>
+  );
+}
+
+const cap = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
+
+const severityTone = (s?: string) => {
+  const v = s?.toLowerCase();
+  return v === 'high' || v === 'critical' ? 'red' : v === 'medium' ? 'amber' : 'neutral';
+};
+
+// ---- Lens renderers ----
 
 function SummarizeResult({ result }: { result: Record<string, unknown> }) {
   const observations = (result.key_observations as string[]) ?? [];
   const context = (result.context as string) ?? '';
   return (
-    <div className="flex flex-col gap-4">
-      {observations.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Sparkles className="w-4 h-4" />} title="Key Observations" color="text-indigo-500" />
-            <ul className="space-y-2">
-              {observations.map((obs, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
-                  {obs}
-                </li>
-              ))}
-            </ul>
-          </SectionCard>
-        </Section>
-      )}
-      {context && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Lightbulb className="w-4 h-4" />} title="Context" color="text-amber-500" />
-            <p className="text-sm text-slate-700 leading-relaxed">{context}</p>
-          </SectionCard>
-        </Section>
-      )}
-    </div>
+    <>
+      {observations.length > 0 && <Block title="Key observations" count={observations.length}><Bullets items={observations} /></Block>}
+      {context && <Block title="Context"><p className="max-w-[72ch] text-[14px] leading-6 text-ink">{context}</p></Block>}
+    </>
   );
 }
 
@@ -110,158 +165,72 @@ function DataPointsResult({ result }: { result: Record<string, unknown> }) {
   const axes = result.axes as { x?: string; y?: string } | undefined;
   const insights = (result.insights as string[]) ?? [];
   const dataTitle = (result.data_title as string) ?? '';
-  const [copied, setCopied] = useState(false);
-
-  const copyAsCSV = () => {
-    const header = 'Label,Value,Unit,Category';
-    const rows = dataPoints.map(dp =>
-      `"${dp.label}","${dp.value}","${dp.unit ?? ''}","${dp.category ?? ''}"`
-    );
-    navigator.clipboard.writeText([header, ...rows].join('\n'));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const csv = [
+    'Label,Value,Unit,Category',
+    ...dataPoints.map((dp) => [dp.label, dp.value, dp.unit ?? '', dp.category ?? ''].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')),
+  ].join('\n');
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Chart info */}
-      {(chartType || dataTitle) && (
-        <Section>
-          <div className="flex items-center gap-3 flex-wrap">
-            {chartType && chartType !== 'none' && (
-              <Badge className="bg-blue-50 text-blue-700 border-blue-200 gap-1">
-                <BarChart2 className="w-3 h-3" /> {chartType}
-              </Badge>
-            )}
-            {dataTitle && <span className="text-sm font-semibold text-slate-700">{dataTitle}</span>}
-            {axes && (
-              <span className="text-xs text-slate-400">
-                {axes.x && `X: ${axes.x}`}{axes.x && axes.y && ' · '}{axes.y && `Y: ${axes.y}`}
-              </span>
-            )}
-          </div>
-        </Section>
-      )}
-
-      {/* Data table */}
+    <>
       {dataPoints.length > 0 && (
-        <Section>
-          <SectionCard>
-            <div className="flex items-center justify-between mb-3">
-              <SectionHeader icon={<Table2 className="w-4 h-4" />} title="Extracted Data Points" color="text-blue-500" />
-              <Button size="sm" variant="outline" onClick={copyAsCSV} className="gap-1.5 text-xs h-7">
-                {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
-                {copied ? 'Copied!' : 'Copy CSV'}
-              </Button>
+        <Block
+          title={dataTitle || 'Data points'}
+          count={dataPoints.length}
+          action={<CopyButton text={csv} label="Copy as CSV" />}
+          flush
+        >
+          {(chartType && chartType !== 'none') || axes?.x || axes?.y ? (
+            <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2.5 text-[13px] text-ink-2">
+              {chartType && chartType !== 'none' && <Pill>{chartType}</Pill>}
+              {axes?.x && <span>X: <span className="text-ink">{axes.x}</span></span>}
+              {axes?.y && <span>Y: <span className="text-ink">{axes.y}</span></span>}
             </div>
-            <div className="overflow-x-auto -mx-1">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100">
-                    <th className="text-left px-2 py-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Label</th>
-                    <th className="text-left px-2 py-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Value</th>
-                    <th className="text-left px-2 py-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Unit</th>
-                    <th className="text-left px-2 py-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">Category</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dataPoints.map((dp, i) => (
-                    <tr key={i} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                      <td className="px-2 py-2 font-medium text-slate-800">{dp.label}</td>
-                      <td className="px-2 py-2 text-slate-700">{dp.value}</td>
-                      <td className="px-2 py-2 text-slate-500">{dp.unit ?? '—'}</td>
-                      <td className="px-2 py-2 text-slate-500">{dp.category ?? '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </SectionCard>
-        </Section>
+          ) : null}
+          <Table
+            head={['Label', 'Value', 'Unit', 'Category']}
+            rows={dataPoints.map((dp) => [dp.label, <span className="font-mono text-[13px] text-ink">{dp.value}</span>, dp.unit || '–', dp.category || '–'])}
+          />
+        </Block>
       )}
-
-      {/* Insights */}
-      {insights.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Lightbulb className="w-4 h-4" />} title="Insights" color="text-amber-500" />
-            <ul className="space-y-2">
-              {insights.map((ins, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                  {ins}
-                </li>
-              ))}
-            </ul>
-          </SectionCard>
-        </Section>
-      )}
-    </div>
+      {insights.length > 0 && <Block title="Insights" count={insights.length}><Bullets items={insights} /></Block>}
+    </>
   );
 }
 
 function UIElementsResult({ result }: { result: Record<string, unknown> }) {
   const layout = (result.layout_description as string) ?? '';
-  const elements = (result.ui_elements as Array<{
-    type: string; label: string; location: string; purpose: string; state?: string;
-  }>) ?? [];
+  const elements = (result.ui_elements as Array<{ type: string; label: string; location: string; purpose: string; state?: string }>) ?? [];
   const colorScheme = (result.color_scheme as string) ?? '';
   const a11y = (result.accessibility_notes as string) ?? '';
 
   return (
-    <div className="flex flex-col gap-4">
-      {layout && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Layers className="w-4 h-4" />} title="Layout" color="text-violet-500" />
-            <p className="text-sm text-slate-700 leading-relaxed">{layout}</p>
-          </SectionCard>
-        </Section>
-      )}
-
+    <>
+      {layout && <Block title="Layout"><p className="max-w-[72ch] text-[14px] leading-6 text-ink">{layout}</p></Block>}
       {elements.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Table2 className="w-4 h-4" />} title={`UI Elements (${elements.length})`} color="text-violet-500" />
-            <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
-              {elements.map((el, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100">
-                  <Badge variant="outline" className="shrink-0 text-xs mt-0.5">{el.type}</Badge>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold text-slate-800 truncate">{el.label || '(unlabeled)'}</span>
-                      {el.state && <span className="text-xs text-slate-400 bg-white border border-slate-200 px-1.5 py-0.5 rounded">{el.state}</span>}
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">{el.location} · {el.purpose}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </SectionCard>
-        </Section>
+        <Block title="Elements" count={elements.length} flush>
+          <Table
+            head={['Element', 'Type', 'Location', 'Purpose', 'State']}
+            rows={elements.map((el) => [el.label || 'Unlabeled', <Pill>{el.type}</Pill>, el.location, el.purpose, el.state || '–'])}
+          />
+        </Block>
       )}
-
       {(colorScheme || a11y) && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <motion.div variants={item} className="grid gap-4 sm:grid-cols-2">
           {colorScheme && (
-            <Section>
-              <SectionCard>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Color Scheme</h4>
-                <p className="text-sm text-slate-700">{colorScheme}</p>
-              </SectionCard>
-            </Section>
+            <div className="rounded-xl border border-line bg-surface px-4 py-3.5 shadow-card">
+              <h3 className="text-[13px] font-medium text-ink-2">Color scheme</h3>
+              <p className="mt-1 text-[14px] leading-6 text-ink">{colorScheme}</p>
+            </div>
           )}
           {a11y && (
-            <Section>
-              <SectionCard>
-                <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Accessibility</h4>
-                <p className="text-sm text-slate-700">{a11y}</p>
-              </SectionCard>
-            </Section>
+            <div className="rounded-xl border border-line bg-surface px-4 py-3.5 shadow-card">
+              <h3 className="text-[13px] font-medium text-ink-2">Accessibility</h3>
+              <p className="mt-1 text-[14px] leading-6 text-ink">{a11y}</p>
+            </div>
           )}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -272,389 +241,208 @@ function CodeResult({ result }: { result: Record<string, unknown> }) {
   const issues = (result.issues as string[]) ?? [];
   const solution = (result.solution as string) ?? '';
   const steps = (result.solution_steps as string[]) ?? [];
-  const [copiedSolution, setCopiedSolution] = useState(false);
-
-  const copySolution = () => {
-    navigator.clipboard.writeText(solution);
-    setCopiedSolution(true);
-    setTimeout(() => setCopiedSolution(false), 2000);
-  };
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Language + Description */}
+    <>
       {(language || description) && (
-        <Section>
-          <SectionCard>
-            <div className="flex items-center gap-2 mb-3">
-              <Code2 className="w-4 h-4 text-emerald-500" />
-              <h3 className="font-semibold text-slate-800">Code Description</h3>
-              {language && <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">{language}</Badge>}
-            </div>
-            <p className="text-sm text-slate-700 leading-relaxed">{description}</p>
-          </SectionCard>
-        </Section>
+        <Block title="What the code does" action={language ? <Pill>{language}</Pill> : undefined}>
+          <p className="max-w-[72ch] text-[14px] leading-6 text-ink">{description}</p>
+        </Block>
       )}
-
-      {/* Extracted code blocks */}
-      {blocks.map((block, i) => (
-        <Section key={i}>
-          <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between px-4 py-2 bg-slate-900">
-              <span className="text-xs font-mono text-slate-400">{block.language || 'code'}</span>
-            </div>
-            <pre className="bg-slate-950 text-slate-100 text-xs font-mono p-4 overflow-x-auto max-h-64 leading-relaxed">
-              <code>{block.code}</code>
-            </pre>
-            {block.explanation && (
-              <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 text-xs text-slate-600">
-                {block.explanation}
-              </div>
-            )}
-          </div>
-        </Section>
-      ))}
-
-      {/* Issues */}
+      {blocks.map((block, i) => <CodeBlock key={i} code={block.code} language={block.language || language} caption={block.explanation} />)}
       {issues.length > 0 && (
-        <Section>
-          <SectionCard className="border-red-100">
-            <SectionHeader icon={<Bug className="w-4 h-4" />} title="Issues Found" color="text-red-500" />
-            <ul className="space-y-2">
-              {issues.map((issue, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                  <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
-                  {issue}
-                </li>
-              ))}
-            </ul>
-          </SectionCard>
-        </Section>
+        <Block title="Issues" count={issues.length}>
+          <ul className="space-y-2">
+            {issues.map((issue, i) => (
+              <li key={i} className="grid grid-cols-[18px_minmax(0,1fr)] gap-2 text-[14px] leading-6 text-ink">
+                <span aria-hidden="true" className="mt-[7px] h-2 w-2 rotate-45 rounded-[2px] bg-conflict" />
+                {issue}
+              </li>
+            ))}
+          </ul>
+        </Block>
       )}
-
-      {/* Solution */}
-      {solution && (
-        <Section>
-          <div className="rounded-xl overflow-hidden border border-emerald-200 shadow-sm">
-            <div className="flex items-center justify-between px-4 py-2.5 bg-emerald-900">
-              <div className="flex items-center gap-2">
-                <Wrench className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm font-semibold text-emerald-100">Solution</span>
-              </div>
-              <Button size="sm" variant="ghost" onClick={copySolution} className="gap-1.5 text-xs h-7 text-emerald-300 hover:text-emerald-100 hover:bg-emerald-800">
-                {copiedSolution ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                {copiedSolution ? 'Copied!' : 'Copy'}
-              </Button>
-            </div>
-            <pre className="bg-emerald-950 text-emerald-100 text-xs font-mono p-4 overflow-x-auto max-h-80 leading-relaxed">
-              <code>{solution}</code>
-            </pre>
-          </div>
-        </Section>
-      )}
-
-      {/* Solution steps */}
-      {steps.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Lightbulb className="w-4 h-4" />} title="Solution Steps" color="text-amber-500" />
-            <ol className="space-y-2">
-              {steps.map((step, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-          </SectionCard>
-        </Section>
-      )}
-    </div>
+      {solution && <CodeBlock code={solution} language={`Corrected ${language || 'code'}`} />}
+      {steps.length > 0 && <Block title="How to apply the fix" count={steps.length}><Steps items={steps} /></Block>}
+    </>
   );
 }
 
 function SystemDesignResult({ result }: { result: Record<string, unknown> }) {
   const overview = (result.architecture_overview as string) ?? '';
-  const systems = (result.systems as Array<{
-    name: string; type: string; responsibility: string; technology?: string;
-  }>) ?? [];
-  const integrations = (result.integrations as Array<{
-    source: string; target: string; protocol: string; data_exchanged: string;
-  }>) ?? [];
+  const systems = (result.systems as Array<{ name: string; type: string; responsibility: string; technology?: string }>) ?? [];
+  const integrations = (result.integrations as Array<{ source: string; target: string; protocol: string; data_exchanged: string }>) ?? [];
   const flows = (result.data_flows as string[]) ?? [];
-  const risks = (result.risks as Array<{
-    area: string; description: string; severity: string;
-  }>) ?? [];
-  const recommendations = (result.recommendations as Array<{
-    priority: string; recommendation: string; rationale: string;
-  }>) ?? [];
+  const risks = (result.risks as Array<{ area: string; description: string; severity: string }>) ?? [];
+  const recommendations = (result.recommendations as Array<{ priority: string; recommendation: string; rationale: string }>) ?? [];
   const questions = (result.assumptions_and_questions as string[]) ?? [];
 
   return (
-    <div className="flex flex-col gap-4">
-      {overview && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Network className="w-4 h-4" />} title="Architecture Overview" color="text-indigo-500" />
-            <p className="text-sm text-slate-700 leading-relaxed">{overview}</p>
-          </SectionCard>
-        </Section>
-      )}
-
+    <>
+      {overview && <Block title="Architecture overview"><p className="max-w-[72ch] text-[14px] leading-6 text-ink">{overview}</p></Block>}
       {systems.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Layers className="w-4 h-4" />} title={`Systems & Components (${systems.length})`} color="text-blue-500" />
-            <div className="grid gap-2 sm:grid-cols-2">
-              {systems.map((system, i) => (
-                <div key={i} className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-800">{system.name}</span>
-                    {system.type && <Badge variant="outline" className="text-xs">{system.type}</Badge>}
-                  </div>
-                  {system.responsibility && <p className="mt-1 text-sm text-slate-600">{system.responsibility}</p>}
-                  {system.technology && <p className="mt-2 text-xs text-slate-400">Technology: {system.technology}</p>}
-                </div>
-              ))}
-            </div>
-          </SectionCard>
-        </Section>
+        <Block title="Systems" count={systems.length} flush>
+          <Table
+            head={['System', 'Role', 'Responsibility', 'Technology']}
+            rows={systems.map((s) => [s.name, s.type ? <Pill>{s.type}</Pill> : '–', s.responsibility || '–', s.technology || 'Unclear'])}
+          />
+        </Block>
       )}
-
       {integrations.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<ArrowRightLeft className="w-4 h-4" />} title={`Integrations (${integrations.length})`} color="text-cyan-600" />
-            <div className="space-y-2">
-              {integrations.map((integration, i) => (
-                <div key={i} className="rounded-lg border border-slate-100 p-3">
-                  <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="font-semibold text-slate-800">{integration.source}</span>
-                    <span className="text-slate-400">→</span>
-                    <span className="font-semibold text-slate-800">{integration.target}</span>
-                    {integration.protocol && <Badge variant="outline" className="text-xs">{integration.protocol}</Badge>}
-                  </div>
-                  {integration.data_exchanged && <p className="mt-1 text-sm text-slate-600">{integration.data_exchanged}</p>}
-                </div>
-              ))}
-            </div>
-          </SectionCard>
-        </Section>
+        <Block title="Integrations" count={integrations.length} flush>
+          <Table
+            head={['From', 'To', 'How', 'What moves']}
+            rows={integrations.map((it) => [it.source, <span className="font-medium text-ink">{it.target}</span>, it.protocol ? <span className="font-mono text-[12.5px]">{it.protocol}</span> : 'Unclear', it.data_exchanged || '–'])}
+          />
+        </Block>
       )}
-
-      {flows.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<GitBranch className="w-4 h-4" />} title="Data Flows" color="text-violet-500" />
-            <ol className="space-y-2">
-              {flows.map((flow, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-slate-700">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-700">{i + 1}</span>
-                  {flow}
-                </li>
-              ))}
-            </ol>
-          </SectionCard>
-        </Section>
-      )}
-
+      {flows.length > 0 && <Block title="Data flows" count={flows.length}><Steps items={flows} /></Block>}
       {risks.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<ShieldAlert className="w-4 h-4" />} title="Risks & Gaps" color="text-rose-500" />
-            <div className="space-y-2">
-              {risks.map((risk, i) => (
-                <div key={i} className="flex items-start gap-3 rounded-lg border border-rose-100 bg-rose-50/50 p-3">
-                  <Badge className={
-                    risk.severity?.toLowerCase() === 'high'
-                      ? 'bg-rose-100 text-rose-700 border-rose-200'
-                      : risk.severity?.toLowerCase() === 'medium'
-                        ? 'bg-amber-100 text-amber-700 border-amber-200'
-                        : 'bg-slate-100 text-slate-600 border-slate-200'
-                  }>{risk.severity || 'unknown'}</Badge>
-                  <div>
-                    {risk.area && <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{risk.area}</p>}
-                    <p className="text-sm text-slate-700">{risk.description}</p>
-                  </div>
+        <Block title="Risks and gaps" count={risks.length} flush>
+          <ul>
+            {risks.map((risk, i) => (
+              <li key={i} className="flex items-start gap-3 border-b border-line px-4 py-3 last:border-0">
+                <Pill tone={severityTone(risk.severity)}>{cap(risk.severity) || 'Unrated'}</Pill>
+                <div className="min-w-0">
+                  {risk.area && <p className="text-[13px] font-medium text-ink-2">{risk.area}</p>}
+                  <p className="text-[14px] leading-6 text-ink">{risk.description}</p>
                 </div>
-              ))}
-            </div>
-          </SectionCard>
-        </Section>
+              </li>
+            ))}
+          </ul>
+        </Block>
       )}
-
       {recommendations.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Lightbulb className="w-4 h-4" />} title="Recommendations" color="text-amber-500" />
-            <div className="space-y-3">
-              {recommendations.map((item, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <Badge variant="outline" className="mt-0.5 shrink-0 text-xs">{item.priority || 'priority n/a'}</Badge>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">{item.recommendation}</p>
-                    {item.rationale && <p className="mt-0.5 text-sm text-slate-600">{item.rationale}</p>}
-                  </div>
+        <Block title="Recommendations" count={recommendations.length} flush>
+          <ul>
+            {recommendations.map((rec, i) => (
+              <li key={i} className="flex items-start gap-3 border-b border-line px-4 py-3 last:border-0">
+                <Pill tone={severityTone(rec.priority) === 'red' ? 'red' : severityTone(rec.priority) === 'amber' ? 'amber' : 'neutral'}>{cap(rec.priority) || 'Unrated'}</Pill>
+                <div className="min-w-0">
+                  <p className="text-[14px] font-medium leading-6 text-ink">{rec.recommendation}</p>
+                  {rec.rationale && <p className="text-[13px] leading-[1.55] text-ink-2">{rec.rationale}</p>}
                 </div>
-              ))}
-            </div>
-          </SectionCard>
-        </Section>
+              </li>
+            ))}
+          </ul>
+        </Block>
       )}
-
       {questions.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Lightbulb className="w-4 h-4" />} title="Assumptions & Client Questions" color="text-slate-500" />
-            <ul className="space-y-2">
-              {questions.map((question, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-slate-400" />
-                  {question}
-                </li>
-              ))}
-            </ul>
-          </SectionCard>
-        </Section>
+        <Block title="Questions for the client" count={questions.length}>
+          <ul className="space-y-2">
+            {questions.map((q, i) => (
+              <li key={i} className="grid grid-cols-[18px_minmax(0,1fr)] gap-2 text-[14px] leading-6 text-ink">
+                <FindingMark type="open_question" size="sm" className="mt-[3px] scale-[.8]" />
+                {q}
+              </li>
+            ))}
+          </ul>
+        </Block>
       )}
-    </div>
+    </>
   );
 }
 
-// ---- Main component ----
+// ---- Main ----
 
-export function AnalysisResults({ data, mode, readOnly = false, projectId }: AnalysisResultsProps) {
+export function AnalysisResults({ data, mode, readOnly = false }: AnalysisResultsProps) {
+  const memory = data.memory_used;
+  const memoryGroups = memory
+    ? ([
+        ['Confirmed facts', memory.confirmedFacts],
+        ['Open conflicts', memory.openConflicts],
+        ['Open questions', memory.openQuestions ?? []],
+      ] as const).filter(([, list]) => list.length > 0)
+    : [];
+  const tech = data.technical_details;
+
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className="w-full flex flex-col gap-5 pb-12"
-    >
-      {data.memory_used && (data.memory_used.confirmedFacts.length > 0 || data.memory_used.openConflicts.length > 0 || (data.memory_used.openQuestions?.length ?? 0) > 0) && (
-        <Section>
-          <SectionCard className="border-[#dce9e5] bg-[#f6faf7]">
-            <SectionHeader icon={<BookOpenTextIcon />} title="Project memory used for this run" color="text-[#638574]" />
-            <p className="mb-3 text-xs leading-5 text-[#778b80]">These reviewed findings were included as background context—not as claims about what is visible in the image.</p>
-            {data.memory_used.confirmedFacts.length > 0 && <div className="mb-3"><p className="mb-1 text-[10px] font-semibold uppercase tracking-[.13em] text-[#638574]">Confirmed facts</p><ul className="space-y-1">{data.memory_used.confirmedFacts.map((item) => <li key={item.id} className="text-sm text-[#496253]">{item.statement}{item.sourceLabels.length > 0 && <span className="ml-1 text-xs text-[#8a9a8f]">· {item.sourceLabels.join(", ")}</span>}</li>)}</ul></div>}
-            {data.memory_used.openConflicts.length > 0 && <div><p className="mb-1 text-[10px] font-semibold uppercase tracking-[.13em] text-[#997844]">Open conflicts</p><ul className="space-y-1">{data.memory_used.openConflicts.map((item) => <li key={item.id} className="text-sm text-[#765f3c]">{item.statement}{item.sourceLabels.length > 0 && <span className="ml-1 text-xs text-[#a08e70]">· {item.sourceLabels.join(", ")}</span>}</li>)}</ul></div>}
-            {(data.memory_used.openQuestions?.length ?? 0) > 0 && <div className="mt-3"><p className="mb-1 text-[10px] font-semibold uppercase tracking-[.13em] text-[#997844]">Open questions — UNRESOLVED</p><ul className="space-y-1">{data.memory_used.openQuestions?.map((item) => <li key={item.id} className="text-sm text-[#765f3c]">{item.statement}{item.sourceLabels.length > 0 && <span className="ml-1 text-xs text-[#a08e70]">· {item.sourceLabels.join(", ")}</span>}</li>)}</ul></div>}
-          </SectionCard>
-        </Section>
-      )}
-      {/* Summary */}
-      <Section>
-        <Card className="rounded-[18px] border-[#e3ecee] bg-gradient-to-br from-white to-[#f5fafb] shadow-[0_8px_26px_rgba(39,75,95,.035)]">
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <div className="mt-0.5 shrink-0 rounded-xl border border-[#dcebef] bg-[#eef7f9] p-2.5 text-[#347f9d]">
-                <AlignLeft className="w-5 h-5" />
-              </div>
-              <div>
-                <h2 className="mb-1.5 font-display text-lg font-semibold tracking-[-.025em] text-[#2b4654]">Summary</h2>
-                <p className="text-[14px] leading-7 text-[#5d737e]">{data.summary}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </Section>
+    <motion.div variants={container} initial="hidden" animate="show" className="flex w-full flex-col gap-4">
+      <motion.section variants={item} className="rounded-xl border border-line bg-surface px-5 py-4 shadow-card">
+        <h2 className="text-[13px] font-medium text-ink-2">Summary</h2>
+        <p className="mt-1.5 max-w-[75ch] text-[15px] leading-[1.65] text-ink">{data.summary}</p>
+        {data.tags.length > 0 && (
+          <div className="mt-3.5 flex flex-wrap gap-1.5">
+            {data.tags.map((tag, i) => <Pill key={i}>{tag}</Pill>)}
+          </div>
+        )}
+      </motion.section>
 
-      {/* Mode-specific content */}
       {mode === 'summarize' && <SummarizeResult result={data.mode_result} />}
       {mode === 'extract_data_points' && <DataPointsResult result={data.mode_result} />}
       {mode === 'identify_ui_elements' && <UIElementsResult result={data.mode_result} />}
       {mode === 'describe_code' && <CodeResult result={data.mode_result} />}
       {mode === 'system_design' && <SystemDesignResult result={data.mode_result} />}
 
-      {/* Shared: Text content */}
       {data.text_content && data.text_content.trim() !== '' && (
-        <Section>
-          <SectionCard className="border-amber-100 bg-amber-50/30">
-            <SectionHeader icon={<FileText className="w-4 h-4" />} title="Detected Text" color="text-amber-600" />
-            <div className="p-3 bg-white/60 rounded-lg border border-amber-100 font-mono text-sm text-slate-700 whitespace-pre-wrap">
-              {data.text_content}
-            </div>
-          </SectionCard>
-        </Section>
+        <Block title="Text found in the images" action={<CopyButton text={data.text_content} />} flush>
+          <pre className="max-h-80 overflow-auto whitespace-pre-wrap bg-canvas px-4 py-3.5 font-mono text-[13px] leading-[1.65] text-ink">{data.text_content}</pre>
+        </Block>
       )}
 
-      {/* Technical details */}
-      <Section>
-        <Card className="relative overflow-hidden rounded-[18px] border-[#dbe8ec] bg-[#f2f8fa] text-[#405c68] shadow-none">
-          <div className="absolute right-0 top-0 h-36 w-36 rounded-bl-full bg-[#dceef2] opacity-50" />
-          <CardContent className="p-5 relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <Camera className="h-4 w-4 text-[#7095a2]" />
-              <h3 className="font-display font-semibold tracking-[-.02em] text-[#35515e]">Image characteristics</h3>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <div className="flex items-center gap-1.5 text-slate-400 mb-1">
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span className="text-[10px] font-semibold uppercase tracking-[.14em]">Composition</span>
-                </div>
-                <p className="text-[13px] leading-5 text-[#55717c]">{data.technical_details.composition}</p>
+      {memoryGroups.length > 0 && (
+        <Block title="Project memory used for this run">
+          <p className="mb-3 text-[13px] text-ink-2">Reviewed findings given to the model as background, not as claims about what the images show.</p>
+          <div className="space-y-3">
+            {memoryGroups.map(([label, list]) => (
+              <div key={label}>
+                <h4 className="mb-1 text-[13px] font-medium text-ink-2">{label}</h4>
+                <ul className="space-y-1">
+                  {list.map((m) => (
+                    <li key={m.id} className="text-[14px] leading-6 text-ink">
+                      {m.statement}
+                      {m.sourceLabels.length > 0 && <span className="ml-1.5 font-mono text-[12px] text-ink-3">{m.sourceLabels.join(', ')}</span>}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-slate-400 mb-1">
-                  <Sun className="w-3.5 h-3.5" />
-                  <span className="text-[10px] font-semibold uppercase tracking-[.14em]">Lighting</span>
-                </div>
-                <p className="text-[13px] leading-5 text-[#55717c]">{data.technical_details.lighting}</p>
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5 text-slate-400 mb-1">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span className="text-[10px] font-semibold uppercase tracking-[.14em]">Quality</span>
-                </div>
-                <p className="text-[13px] leading-5 text-[#55717c]">{data.technical_details.quality}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </Section>
+            ))}
+          </div>
+        </Block>
+      )}
 
-      {/* Tags */}
-      {data.tags.length > 0 && (
-        <Section>
-          <SectionCard>
-            <SectionHeader icon={<Tags className="w-4 h-4" />} title="Tags" color="text-teal-500" />
-            <div className="flex flex-wrap gap-2">
-              {data.tags.map((tag, i) => (
-                <span key={i} className="text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          </SectionCard>
-        </Section>
+      {tech && (tech.composition || tech.lighting || tech.quality) && (
+        <motion.details variants={item} className="group rounded-xl border border-line bg-surface shadow-card">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-4 text-[14px] font-semibold text-ink [&::-webkit-details-marker]:hidden">
+            Image characteristics
+            <span className="ml-auto text-[13px] font-normal text-ink-2 group-open:hidden">Show</span>
+            <span className="ml-auto hidden text-[13px] font-normal text-ink-2 group-open:inline">Hide</span>
+          </summary>
+          <dl className="grid gap-4 border-t border-line px-4 py-4 sm:grid-cols-3">
+            {([['Composition', tech.composition], ['Lighting', tech.lighting], ['Quality', tech.quality]] as const).map(([k, v]) => (
+              <div key={k}>
+                <dt className="text-[13px] font-medium text-ink-2">{k}</dt>
+                <dd className="mt-0.5 text-[14px] leading-6 text-ink">{v || '–'}</dd>
+              </div>
+            ))}
+          </dl>
+        </motion.details>
       )}
-      {!readOnly && projectId && data.candidate_findings && data.candidate_findings.length > 0 && (
-        <ProjectCandidateReview projectId={projectId} candidates={data.candidate_findings} />
-      )}
+
       {readOnly && data.candidate_findings && data.candidate_findings.length > 0 && (
-        <Section>
-          <SectionCard className="border-[#dce9e5] bg-[#f6faf7]">
-            <SectionHeader icon={<FileText className="h-4 w-4" />} title="Findings from this analysis" color="text-[#638574]" />
-            <div className="space-y-3">
-              {data.candidate_findings.map((finding) => (
-                <div key={finding.id} data-testid={`historical-candidate-${finding.id}`} className="rounded-xl border border-[#e0ebe4] bg-white/80 p-4">
-                  <p className="text-sm leading-6 text-[#405b4b]">{finding.statement}</p>
-                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-[#74877b]">
-                    <span className="rounded-md bg-[#eef4ef] px-2 py-1 font-semibold uppercase tracking-wide">{finding.status.replace(/_/g, " ")}</span>
-                    <span>{finding.type.replace(/_/g, " ")}</span>
+        <Block title="Findings from this run" count={data.candidate_findings.length} flush>
+          <ol>
+            {data.candidate_findings.map((finding, i) => (
+              <li key={finding.id} data-testid={`historical-candidate-${finding.id}`} className="grid grid-cols-[22px_minmax(0,1fr)] gap-3 border-b border-line px-4 py-3.5 last:border-0">
+                <FindingMark type={finding.type} n={i + 1} muted={finding.status !== 'pending'} />
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 text-[13px]">
+                    <span className="font-medium text-ink-2">{KIND_LABEL[finding.type]}</span>
+                    <span className="text-ink-3">·</span>
+                    <span className="text-ink-2">{finding.status.replace(/_/g, ' ')}</span>
                   </div>
-                  {finding.sourceLabels.length > 0 && <p className="mt-2 text-[11px] text-[#89988e]">Sources: {finding.sourceLabels.join(", ")}</p>}
+                  <p className="mt-0.5 text-[14px] leading-6 text-ink">{finding.statement}</p>
+                  {finding.sourceRefs.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {finding.sourceRefs.map((ref, j) => <SourceChip key={ref}>{sourceText(ref, finding.sourceLabels[j])}</SourceChip>)}
+                    </div>
+                  )}
                 </div>
-              ))}
-            </div>
-          </SectionCard>
-        </Section>
+              </li>
+            ))}
+          </ol>
+        </Block>
       )}
     </motion.div>
   );
-}
-
-function BookOpenTextIcon() {
-  return <FileText className="h-4 w-4" />;
 }

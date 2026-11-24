@@ -1,40 +1,65 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 @layer theme, base, clerk, components, utilities;
 @import "tailwindcss";
 @import "@clerk/themes/shadcn.css";
 
-@theme inline {
-  --font-sans: 'DM Sans', sans-serif;
-  --font-display: 'Manrope', sans-serif;
+@custom-variant dark (&:where(.dark, .dark *));
 
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+/*
+  Visual Context Extractor
+  Light and dark grounds in near-neutral greys, Geist for everything, Geist Mono for
+  citations and data. Colour only carries meaning: blue = fact, red = conflict,
+  amber = open question, green = confirmed.
+*/
+@theme inline {
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-canvas: var(--ds-canvas);
+  --color-surface: var(--ds-surface);
+  --color-subtle: var(--ds-subtle);
+  --color-muted-bg: var(--ds-muted-bg);
+  --color-ink: var(--ds-ink);
+  --color-ink-2: var(--ds-ink-2);
+  --color-ink-3: var(--ds-ink-3);
+  --color-line: var(--ds-line);
+  --color-line-2: var(--ds-line-2);
+  --color-fact: var(--ds-fact);
+  --color-fact-bg: var(--ds-fact-bg);
+  --color-conflict: var(--ds-conflict);
+  --color-conflict-bg: var(--ds-conflict-bg);
+  --color-question: var(--ds-question);
+  --color-question-bg: var(--ds-question-bg);
+  --color-ok: var(--ds-ok);
+  --color-ok-bg: var(--ds-ok-bg);
+
+  --color-background: var(--ds-canvas);
+  --color-foreground: var(--ds-ink);
+  --color-card: var(--ds-surface);
+  --color-card-foreground: var(--ds-ink);
+  --color-popover: var(--ds-surface);
+  --color-popover-foreground: var(--ds-ink);
+  --color-primary: var(--ds-ink);
+  --color-primary-foreground: var(--ds-surface);
+  --color-secondary: var(--ds-subtle);
+  --color-secondary-foreground: var(--ds-ink);
+  --color-muted: var(--ds-subtle);
+  --color-muted-foreground: var(--ds-ink-2);
+  --color-accent: var(--ds-subtle);
+  --color-accent-foreground: var(--ds-ink);
+  --color-destructive: var(--ds-conflict);
+  --color-destructive-foreground: #ffffff;
+  --color-border: var(--ds-line);
+  --color-input: var(--ds-line-2);
+  --color-ring: var(--ds-ring);
+
+  --radius-xl: 12px;
+  --radius-lg: 8px;
+  --radius-md: 6px;
+  --radius-sm: 4px;
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
-  --animate-scan: scan 2s linear infinite;
 
   @keyframes accordion-down {
     from { height: 0; }
@@ -44,94 +69,110 @@
     from { height: var(--radix-accordion-content-height); }
     to { height: 0; }
   }
-  @keyframes scan {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
-  }
 }
 
 :root {
-  --background: 205 35% 98%;
-  --foreground: 211 37% 18%;
-  
-  --card: 0 0% 100%;
-  --card-foreground: 211 37% 18%;
-  
-  --popover: 0 0% 100%;
-  --popover-foreground: 211 37% 18%;
-  
-  --primary: 207 61% 39%;
-  --primary-foreground: 0 0% 100%;
-  
-  --secondary: 202 40% 94%;
-  --secondary-foreground: 211 37% 22%;
-  
-  --muted: 204 33% 95%;
-  --muted-foreground: 210 15% 46%;
-  
-  --accent: 199 48% 93%;
-  --accent-foreground: 207 51% 27%;
-  
-  --destructive: 2 61% 48%;
-  --destructive-foreground: 0 0% 100%;
+  --ds-canvas: #fafafa;
+  --ds-surface: #ffffff;
+  --ds-subtle: #f2f2f2;
+  --ds-muted-bg: #ebebeb;
+  --ds-ink: #171717;
+  --ds-ink-2: #5e5e5e;
+  --ds-ink-3: #767676;
+  --ds-line: #ebebeb;
+  --ds-line-2: #dedede;
+  --ds-ring: #0068d6;
+  --ds-fact: #0068d6;
+  --ds-fact-bg: #ebf4ff;
+  --ds-conflict: #d1242b;
+  --ds-conflict-bg: #ffeeee;
+  --ds-question: #a35200;
+  --ds-question-bg: #fff4dc;
+  --ds-ok: #217a35;
+  --ds-ok-bg: #e9f7ec;
+  --ds-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px rgb(0 0 0 / 0.04);
+  --ds-shadow-pop: 0 4px 8px rgb(0 0 0 / 0.04), 0 16px 32px rgb(0 0 0 / 0.08);
+  color-scheme: light;
 
-  --border: 204 24% 88%;
-  --input: 204 24% 88%;
-  --ring: 204 66% 61%;
-  
-  --radius: 0.9rem;
-  --mist: #dff3f8;
-  --ink: #203747;
-  --muted-ink: #657985;
-  --line: #e0e9ed;
+  /* shadcn components read these */
+  --button-outline: var(--ds-line-2);
+  --primary-border: var(--ds-ink);
+  --secondary-border: var(--ds-line-2);
+  --destructive-border: var(--ds-conflict);
+  --radius: 0.5rem;
 }
 
 .dark {
-  --background: 211 35% 12%;
-  --foreground: 200 30% 94%;
-  --card: 211 30% 16%;
-  --card-foreground: 200 30% 94%;
-  --popover: 211 30% 16%;
-  --popover-foreground: 200 30% 94%;
-  --primary: 199 56% 64%;
-  --primary-foreground: 211 35% 12%;
-  --secondary: 210 24% 22%;
-  --secondary-foreground: 200 30% 94%;
-  --muted: 210 24% 20%;
-  --muted-foreground: 204 16% 67%;
-  --accent: 204 27% 23%;
-  --accent-foreground: 200 30% 94%;
-  --destructive: 0 55% 46%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 210 20% 27%;
-  --input: 210 20% 27%;
-  --ring: 199 56% 64%;
+  --ds-canvas: #000000;
+  --ds-surface: #0a0a0a;
+  --ds-subtle: #1a1a1a;
+  --ds-muted-bg: #232323;
+  --ds-ink: #ededed;
+  --ds-ink-2: #a1a1a1;
+  --ds-ink-3: #8c8c8c;
+  --ds-line: #1f1f1f;
+  --ds-line-2: #2e2e2e;
+  --ds-ring: #52a8ff;
+  --ds-fact: #52a8ff;
+  --ds-fact-bg: #0d2138;
+  --ds-conflict: #ff6369;
+  --ds-conflict-bg: #3a1214;
+  --ds-question: #ffb224;
+  --ds-question-bg: #2e1d00;
+  --ds-ok: #62c073;
+  --ds-ok-bg: #0f2615;
+  --ds-shadow: 0 0 0 1px rgb(255 255 255 / 0.02);
+  --ds-shadow-pop: 0 0 0 1px var(--ds-line-2), 0 16px 32px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-line;
+  }
+  html {
+    background: var(--ds-canvas);
   }
   body {
-    @apply bg-background text-foreground antialiased font-sans selection:bg-primary/20 selection:text-primary;
-    background:
-      radial-gradient(ellipse at 12% 0%, rgba(190, 230, 240, .66), transparent 38rem),
-      linear-gradient(180deg, #f8fcfd 0%, #ffffff 36rem, #fbfdfe 100%);
+    @apply bg-canvas text-ink antialiased font-sans;
+    font-size: 14px;
+    line-height: 1.5;
     min-height: 100dvh;
+    font-feature-settings: "ss01" on;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
-    @apply tracking-tight font-semibold;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+  code, pre, kbd, .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--ds-ink-3);
   }
 }
 
 @layer utilities {
-  .glass-card {
-    @apply bg-white/80 backdrop-blur-xl border border-white/70 shadow-[0_12px_34px_rgba(39,75,95,0.05)];
+  .shadow-card { box-shadow: var(--ds-shadow); }
+  .shadow-pop { box-shadow: var(--ds-shadow-pop); }
+  .dot-grid {
+    background-image: radial-gradient(var(--ds-line-2) 1px, transparent 1px);
+    background-size: 16px 16px;
   }
 }
 
 * { -webkit-tap-highlight-color: transparent; }
-button, a, select, input, textarea { outline-offset: 3px; }
-:focus-visible { outline: 2px solid #6aaac0; }
-::selection { background: #cbe8f0; color: #203747; }
+:focus-visible { outline: 2px solid var(--ds-ring); outline-offset: 2px; border-radius: 4px; }
+::selection { background: var(--ds-fact-bg); color: var(--ds-ink); }
+* { scrollbar-color: var(--ds-line-2) transparent; scrollbar-width: thin; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(600%); }
+}

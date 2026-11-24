@@ -1,18 +1,42 @@
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadCloud, X, Zap, Plus, BarChart2, Code2, Network } from 'lucide-react';
+import { ImagePlus, Plus, X } from 'lucide-react';
+import type { ProjectFinding } from '@workspace/api-client-react';
 import { cn, isValidImageType } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
+import { FindingMark, Spinner } from '@/components/marks';
 import type { AnalysisMode } from '@/hooks/use-analyze';
 
-const MODES: { value: AnalysisMode; label: string; description: string }[] = [
-  { value: 'summarize', label: 'Summarize', description: 'General summary & key observations' },
-  { value: 'extract_data_points', label: 'Extract Data Points', description: 'Tables, charts & graphs' },
-  { value: 'identify_ui_elements', label: 'Identify UI Elements', description: 'Map UI components & layout' },
-  { value: 'describe_code', label: 'Describe Code', description: 'Explain & solve code problems' },
-  { value: 'system_design', label: 'System Design', description: 'Understand client systems & integrations' },
+export const MODES: { value: AnalysisMode; label: string; short: string; description: string; action: string }[] = [
+  { value: 'summarize', label: 'Summarize', short: 'Summarize', description: 'Key observations and the context around them.', action: 'Summarize' },
+  { value: 'extract_data_points', label: 'Data points', short: 'Data', description: 'Every value in a chart or table, with labels, units and axes.', action: 'Extract data' },
+  { value: 'identify_ui_elements', label: 'UI elements', short: 'UI', description: 'Each element on screen with its type, location, purpose and state.', action: 'Map interface' },
+  { value: 'describe_code', label: 'Code', short: 'Code', description: 'What the code does, its issues, and a corrected version.', action: 'Read code' },
+  { value: 'system_design', label: 'System design', short: 'Systems', description: 'Systems, integrations, data flows, risks and questions for the client.', action: 'Map systems' },
 ];
+
+export function LensPicker({ mode, onModeChange, disabled }: { mode: AnalysisMode; onModeChange: (mode: AnalysisMode) => void; disabled?: boolean }) {
+  return (
+    <div role="radiogroup" aria-label="Lens" className="inline-flex max-w-full overflow-x-auto rounded-lg border border-line-2 bg-surface p-[3px]">
+      {MODES.map((m) => (
+        <button
+          key={m.value}
+          type="button"
+          role="radio"
+          aria-checked={mode === m.value}
+          disabled={disabled}
+          onClick={() => onModeChange(m.value)}
+          className={cn(
+            'shrink-0 whitespace-nowrap rounded-md px-3 py-1.5 text-[13px] font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+            mode === m.value ? 'bg-subtle text-ink' : 'text-ink-2 hover:text-ink',
+          )}
+        >
+          {m.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 interface ImageUploaderProps {
   onImagesSelected: (files: File[]) => void;
@@ -22,7 +46,8 @@ interface ImageUploaderProps {
   isAnalyzing: boolean;
   onAnalyze: () => void;
   mode: AnalysisMode;
-  onModeChange: (mode: AnalysisMode) => void;
+  findings?: ProjectFinding[];
+  highlight?: string[];
 }
 
 export function ImageUploader({
@@ -33,24 +58,24 @@ export function ImageUploader({
   isAnalyzing,
   onAnalyze,
   mode,
-  onModeChange,
+  findings = [],
+  highlight = [],
 }: ImageUploaderProps) {
   const { toast } = useToast();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const valid = acceptedFiles.filter(isValidImageType);
-    const invalid = acceptedFiles.filter(f => !isValidImageType(f));
-    if (invalid.length > 0) {
+    if (acceptedFiles.length > valid.length) {
       toast({
-        title: 'Unsupported file type',
-        description: 'Only JPEG, PNG, WEBP, and GIF images are supported.',
+        title: 'Some files were skipped',
+        description: 'Only JPEG, PNG, WebP and GIF images can be analyzed.',
         variant: 'destructive',
       });
     }
     if (valid.length > 0) onImagesSelected(valid);
   }, [onImagesSelected, toast]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,
     accept: {
       'image/jpeg': ['.jpg', '.jpeg'],
@@ -60,11 +85,15 @@ export function ImageUploader({
     },
     multiple: true,
     disabled: isAnalyzing,
+    noClick: selectedFiles.length > 0,
+    noKeyboard: selectedFiles.length > 0,
   });
 
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       if (isAnalyzing) return;
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT')) return;
       const items = e.clipboardData?.items;
       if (!items) return;
       const files: File[] = [];
@@ -80,166 +109,131 @@ export function ImageUploader({
     return () => window.removeEventListener('paste', handlePaste);
   }, [onImagesSelected, isAnalyzing]);
 
-  const selectedMode = MODES.find(m => m.value === mode)!;
+  const urls = useMemo(() => selectedFiles.map((file) => URL.createObjectURL(file)), [selectedFiles]);
+  useEffect(() => () => urls.forEach((url) => URL.revokeObjectURL(url)), [urls]);
+
+  const selectedMode = MODES.find((m) => m.value === mode)!;
+  const single = selectedFiles.length === 1;
 
   return (
-    <div className="w-full flex flex-col gap-5">
-      {/* Mode selector */}
-      <div className="rounded-[20px] border border-[#dfeaec] bg-white/80 p-4 shadow-[0_12px_32px_rgba(39,75,95,0.045)] sm:p-5">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[.18em] text-[#79909a]">Choose an extraction lens</p>
-          <span className="hidden text-xs text-[#9aabb1] sm:block">One image, five useful ways to read it</span>
-        </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-          {MODES.map((m) => (
-            <button
-              key={m.value}
-              onClick={() => onModeChange(m.value)}
-              disabled={isAnalyzing}
-              className={cn(
-                'flex min-h-[88px] flex-col items-start gap-1 rounded-xl border px-3 py-3 text-left transition-all duration-200',
-                mode === m.value
-                  ? 'border-[#9fc8d4] bg-[#f0f8fa] text-[#286c85] shadow-[inset_0_0_0_1px_rgba(96,158,178,.08)]'
-                  : 'border-[#e6edef] text-[#647780] hover:border-[#c5dce2] hover:bg-[#f8fbfc]',
-                isAnalyzing && 'opacity-50 cursor-not-allowed'
-              )}
-            >
-              <span className="text-[13px] font-semibold leading-tight">{m.label}</span>
-              <span className="text-[11px] leading-[1.45] text-[#8798a0]">{m.description}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+    <section
+      {...getRootProps()}
+      aria-label="Images to analyze"
+      className={cn(
+        'relative overflow-hidden rounded-xl border bg-surface shadow-card outline-none transition-colors',
+        isDragActive ? 'border-fact' : 'border-line',
+      )}
+    >
+      <input {...getInputProps()} aria-label="Choose images" />
 
-      {/* Image drop zone or thumbnails */}
       {selectedFiles.length === 0 ? (
-        <div
-          {...getRootProps()}
-          className={cn(
-            'group relative flex min-h-[260px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[20px] border border-dashed bg-white/75 p-8 transition-all duration-300 hover:bg-[#f9fcfd] sm:p-12',
-            isDragActive ? 'border-[#72afc2] bg-[#eef8fa] scale-[1.005]' : 'border-[#c9dce1] hover:border-[#84b7c6]'
-          )}
-        >
-          <input {...getInputProps()} />
-          <div className={cn(
-            'mb-4 grid h-14 w-14 place-items-center rounded-2xl transition-all duration-300',
-            isDragActive ? 'bg-[#d7edf2] text-[#347f9d] scale-105' : 'bg-[#edf6f8] text-[#6e9cab] group-hover:bg-[#e3f2f5] group-hover:text-[#347f9d]'
-          )}>
-            <UploadCloud className="w-8 h-8" />
-          </div>
-          <h3 className="mb-1 font-display text-lg font-semibold tracking-[-.03em] text-[#2c4654]">Add screenshots to inspect</h3>
-          <p className="max-w-[330px] text-center text-[13px] leading-6 text-[#7a8b93]">
-            Drop files here, browse your device, or paste directly from your clipboard. Multiple images are supported.
+        <div className={cn('dot-grid flex min-h-[420px] cursor-pointer flex-col items-center justify-center px-6 py-14 text-center', isDragActive && 'bg-fact-bg')}>
+          <span className="mb-5 grid h-12 w-12 place-items-center rounded-full border border-line-2 bg-surface text-ink shadow-card">
+            <ImagePlus className="h-5 w-5" />
+          </span>
+          <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-ink">
+            {isDragActive ? 'Drop to add these images' : 'Drop screenshots or diagrams here'}
+          </h2>
+          <p className="mt-1.5 max-w-[26rem] text-[14px] text-ink-2">
+            Or paste from your clipboard with <kbd className="rounded border border-line-2 bg-subtle px-1 font-mono text-[12px] text-ink">⌘V</kbd>. Add several at once to read them together.
           </p>
-          <div className="mt-5 flex items-center gap-2 text-xs font-medium text-slate-400">
-            {['JPEG', 'PNG', 'WEBP', 'GIF'].map(t => (
-            <span key={t} className="rounded-md border border-[#e4edef] bg-[#f7fafb] px-2 py-1">{t}</span>
-            ))}
-          </div>
+          <span className="mt-6 inline-flex h-9 items-center rounded-md border border-line-2 bg-surface px-4 text-[14px] font-medium text-ink transition-colors hover:bg-subtle">
+            Browse files
+          </span>
+          <p className="mt-4 font-mono text-[12px] text-ink-3">PNG · JPEG · WebP · GIF</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-[20px] border border-[#dfeaec] bg-white/85 shadow-[0_12px_32px_rgba(39,75,95,0.045)]">
-          {/* Thumbnail grid */}
-            <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 md:grid-cols-4 sm:p-5">
+        <>
+          <div className="flex flex-wrap items-center gap-2 border-b border-line px-4 py-2.5">
+            <span className="text-[13px] text-ink-2">
+              {selectedFiles.length} image{selectedFiles.length > 1 ? 's' : ''}
+            </span>
+            <span className="ml-auto flex items-center gap-1">
+              {!isAnalyzing && (
+                <>
+                  <button type="button" onClick={open} className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-[13px] font-medium text-ink-2 transition-colors hover:bg-subtle hover:text-ink">
+                    <Plus className="h-4 w-4" /> Add images
+                  </button>
+                  <button type="button" onClick={onClearAll} className="inline-flex h-8 items-center rounded-md px-2.5 text-[13px] font-medium text-ink-2 transition-colors hover:bg-subtle hover:text-ink">
+                    Clear
+                  </button>
+                </>
+              )}
+            </span>
+          </div>
+
+          <div className={cn('dot-grid grid gap-4 p-4 sm:p-5', single ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3')}>
             {selectedFiles.map((file, idx) => {
-              const url = URL.createObjectURL(file);
+              const ref = `IMG-${idx + 1}`;
+              const cited = findings.map((f, i) => ({ f, n: i + 1 })).filter(({ f }) => f.sourceRefs.includes(ref));
+              const lit = highlight.includes(ref);
               return (
-                <div key={idx} className="group relative aspect-square overflow-hidden rounded-xl border border-[#dce8eb] bg-[#f0f5f6]">
-                  <img
-                    src={url}
-                    alt={file.name}
-                    className={cn(
-                      'w-full h-full object-cover transition-opacity',
-                      isAnalyzing ? 'opacity-50' : 'opacity-100'
+                <figure
+                  key={`${file.name}-${file.size}-${idx}`}
+                  className={cn(
+                    'group relative m-0 overflow-hidden rounded-lg border bg-surface transition-[border-color,box-shadow] duration-200',
+                    lit ? 'border-fact ring-2 ring-fact/25' : 'border-line-2',
+                  )}
+                >
+                  <div className={cn('relative flex items-center justify-center bg-subtle', single ? 'max-h-[560px] min-h-[280px]' : 'aspect-[4/3]')}>
+                    <img
+                      src={urls[idx]}
+                      alt={file.name}
+                      className={cn('max-h-[560px] w-full object-contain transition-opacity', !single && 'h-full', isAnalyzing && 'opacity-60')}
+                    />
+                    {isAnalyzing && (
+                      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                        <div className="absolute inset-x-0 h-24 animate-[scan_1.8s_cubic-bezier(.16,1,.3,1)_infinite] bg-gradient-to-b from-transparent to-fact/15" />
+                      </div>
                     )}
-                  />
-                  {/* Scanning overlay on the first image */}
-                  {isAnalyzing && idx === 0 && (
-                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                      <div className="w-full h-12 bg-gradient-to-b from-transparent via-primary/30 to-primary/50 animate-[scan_2s_ease-in-out_infinite]" />
-                    </div>
-                  )}
-                  {!isAnalyzing && (
-                    <button
-                      onClick={() => onRemoveImage(idx)}
-                      aria-label={`Remove ${file.name}`}
-                      className="absolute right-2 top-2 rounded-full bg-[#294654]/75 p-2 text-white opacity-0 transition-opacity hover:bg-[#294654] group-hover:opacity-100 focus:opacity-100"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1.5">
-                    <p className="text-xs text-white/90 truncate">{file.name}</p>
+                    {cited.length > 0 && (
+                      <div className="absolute right-2.5 top-2.5 flex flex-wrap justify-end gap-1">
+                        {cited.map(({ f, n }) => (
+                          <FindingMark key={f.id} type={f.type} n={n} muted={f.status !== 'pending'} className="drop-shadow-sm" />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
+                  <figcaption className="flex items-center gap-2 border-t border-line px-3 py-2">
+                    <span className="rounded-full border border-line-2 px-2 font-mono text-[11.5px] leading-5 text-ink">{ref}</span>
+                    <span className="min-w-0 flex-1 truncate text-[13px] text-ink-2">{file.name}</span>
+                    {!isAnalyzing && (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveImage(idx)}
+                        aria-label={`Remove ${file.name}`}
+                        className="grid h-6 w-6 place-items-center rounded-md text-ink-3 transition-colors hover:bg-subtle hover:text-ink"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </figcaption>
+                </figure>
               );
             })}
-
-            {/* Add more button */}
-            {!isAnalyzing && (
-              <div
-                {...getRootProps()}
-                className="group flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-[#cadde2] transition-all hover:border-[#86b9c8] hover:bg-[#f6fbfc]"
-              >
-                <input {...getInputProps()} />
-                <Plus className="h-6 w-6 text-[#91a6ae] transition-colors group-hover:text-[#347f9d]" />
-                <span className="mt-1 text-xs text-[#91a6ae] transition-colors group-hover:text-[#347f9d]">Add more</span>
-              </div>
-            )}
           </div>
 
-          {/* Action bar */}
-          <div className="flex items-center justify-between gap-3 border-t border-[#e8eff1] bg-[#f9fbfc] px-4 py-3 sm:px-5">
-            <div className="flex items-center gap-2 text-[13px] text-[#82939a]">
-              <span className="font-medium text-[#526973]">{selectedFiles.length} image{selectedFiles.length > 1 ? 's' : ''}</span>
-              <span>·</span>
-              <span className="font-medium text-[#347f9d]">{selectedMode.label}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              {!isAnalyzing && (
-                <button
-                  onClick={onClearAll}
-                  className="rounded px-2 py-1.5 text-xs text-[#83939a] transition-colors hover:bg-[#fff2f0] hover:text-[#a44f49]"
-                >
-                  Clear all
-                </button>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-canvas px-4 py-3">
+            <p className="text-[13px] text-ink-2">
+              Lens: <span className="font-medium text-ink">{selectedMode.label}</span>
+            </p>
+            <button
+              type="button"
+              onClick={onAnalyze}
+              disabled={isAnalyzing}
+              className="inline-flex h-9 items-center gap-2 rounded-md bg-ink px-4 text-[14px] font-medium text-surface transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isAnalyzing ? (
+                <>
+                  <Spinner className="h-3.5 w-3.5" /> Reading {selectedFiles.length > 1 ? 'images' : 'image'}…
+                </>
+              ) : (
+                selectedMode.action
               )}
-              <Button
-                onClick={onAnalyze}
-                disabled={isAnalyzing}
-                className="gap-2 rounded-lg bg-[#347f9d] font-semibold text-white shadow-[0_4px_12px_rgba(52,127,157,.18)] hover:bg-[#286d88]"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Analyzing...
-                  </>
-                ) : mode === 'extract_data_points' ? (
-                  <>
-                    <BarChart2 className="w-4 h-4" />
-                    Extract Data
-                  </>
-                ) : mode === 'describe_code' ? (
-                  <>
-                    <Code2 className="w-4 h-4" />
-                    Analyze Code
-                  </>
-                ) : mode === 'system_design' ? (
-                  <>
-                    <Network className="w-4 h-4" />
-                    Map System
-                  </>
-                ) : (
-                  <>
-                    <Zap className="w-4 h-4" />
-                    Analyze
-                  </>
-                )}
-              </Button>
-            </div>
+            </button>
           </div>
-        </div>
+        </>
       )}
-    </div>
+    </section>
   );
 }

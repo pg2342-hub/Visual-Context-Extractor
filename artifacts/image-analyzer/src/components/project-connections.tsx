@@ -2,9 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
-  CircleHelp,
-  Database,
-  LoaderCircle,
+  CircleHelp,  LoaderCircle,
   Plus,
   ShieldCheck,
   Trash2,
@@ -148,16 +146,13 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
 
   return (
     <div className="max-w-3xl">
-      <h3 className="flex items-center gap-2 font-display text-xl font-semibold tracking-[-.035em] text-[#2b4654]">
-        <Database className="h-5 w-5 text-blue-700" />
-        Project integrations
-      </h3>
-      <p className="mt-1 text-[13px] leading-6 text-[#82929a]">
+      <h2 className="text-[20px] font-semibold tracking-[-0.025em] text-ink">Connected systems</h2>
+      <p className="mt-0.5 max-w-[68ch] text-[14px] leading-6 text-ink-2">
         Add client-authorized read-only credentials for a single project. Only approved schema and object metadata can be used in System Design analysis.
       </p>
 
-      <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#dcebef] bg-[#f2f9fa] px-4 py-3 text-[13px] leading-6 text-[#4f6f7b]">
-        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#347f9d]" />
+      <div className="mt-5 flex items-start gap-3 rounded-xl border border-line bg-canvas px-4 py-3 text-[13px] leading-6 text-ink">
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
         <p>
           Credentials are encrypted before storage, scoped to this project, and never returned to the browser after saving. They are not tested against the provider, and this analyzer does not run source queries or retrieve client records. Add schema/object descriptions yourself and enter no sample rows or customer data.
         </p>
@@ -165,25 +160,25 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
 
       <form
         onSubmit={submit}
-        className="mt-6 grid gap-4 rounded-2xl border border-[#dfeaec] bg-white p-4 sm:p-5"
+        className="mt-6 grid gap-4 rounded-xl border border-line bg-surface p-4 sm:p-5"
       >
-        <h4 className="font-semibold text-[#38515e]">Authorize a source</h4>
+        <h4 className="font-semibold text-ink">Authorize a source</h4>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-ink">
             Source type
             <select
               value={provider}
               onChange={(event) =>
                 setProvider(event.target.value as ProjectConnectionInput["provider"])
               }
-              className="mt-1.5 h-11 w-full rounded-lg border border-[#dce8eb] bg-white px-3 outline-none focus:border-[#78afc0] focus:ring-2 focus:ring-[#e0f0f3]"
+              className="mt-1.5 h-10 w-full rounded-md border border-line-2 bg-surface px-3 outline-none focus:border-ink-3 focus:ring-2 focus:ring-fact/20"
             >
               {Object.entries(PROVIDER_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>{label}</option>
               ))}
             </select>
           </label>
-          <label className="text-sm font-medium text-slate-700">
+          <label className="text-sm font-medium text-ink">
             Connection name
             <input
               required
@@ -191,11 +186,11 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
               maxLength={120}
               onChange={(event) => setDisplayName(event.target.value)}
               placeholder="Production warehouse"
-              className="mt-1.5 h-11 w-full rounded-lg border border-[#dce8eb] bg-white px-3 outline-none focus:border-[#78afc0] focus:ring-2 focus:ring-[#e0f0f3]"
+              className="mt-1.5 h-10 w-full rounded-md border border-line-2 bg-surface px-3 outline-none focus:border-ink-3 focus:ring-2 focus:ring-fact/20"
             />
           </label>
         </div>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-sm font-medium text-ink">
           Read-only credential
           <input
             required
@@ -205,13 +200,13 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
             maxLength={50000}
             onChange={(event) => setCredentials(event.target.value)}
             placeholder="Connection string, access token, or provider credential"
-            className="mt-1.5 h-11 w-full rounded-lg border border-[#dce8eb] bg-white px-3 outline-none focus:border-[#78afc0] focus:ring-2 focus:ring-[#e0f0f3]"
+            className="mt-1.5 h-10 w-full rounded-md border border-line-2 bg-surface px-3 outline-none focus:border-ink-3 focus:ring-2 focus:ring-fact/20"
           />
-          <span className="mt-1 block text-xs font-normal leading-5 text-[#82929a]">
+          <span className="mt-1 block text-xs font-normal leading-5 text-ink-2">
             Use a credential limited to read-only schema/metadata permissions. It is cleared from this form after saving and is not tested by this app.
           </span>
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-sm font-medium text-ink">
           Schema or object metadata
           <textarea
             value={metadata}
@@ -219,24 +214,24 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
             rows={5}
             onChange={(event) => setMetadata(event.target.value)}
             placeholder={"Optional: object/table names, fields, types, and relationships. Do not include records or sample values."}
-            className="mt-1.5 w-full resize-y rounded-lg border border-[#dce8eb] bg-white px-3 py-2.5 text-sm leading-6 outline-none focus:border-[#78afc0] focus:ring-2 focus:ring-[#e0f0f3]"
+            className="mt-1.5 w-full resize-y rounded-md border border-line-2 bg-surface px-3 py-2.5 text-sm leading-6 outline-none focus:border-ink-3 focus:ring-2 focus:ring-fact/20"
           />
         </label>
-        <label className="flex items-start gap-2 text-sm text-[#4f6f7b]">
+        <label className="flex items-start gap-2 text-sm text-ink">
           <input
             type="checkbox"
             checked={includeInAnalysis}
             onChange={(event) => setIncludeInAnalysis(event.target.checked)}
-            className="mt-1 accent-[#347f9d]"
+            className="mt-1 accent-[var(--ds-ink)]"
           />
           Include this metadata in System Design analysis
         </label>
-        {actionError && <p role="alert" className="text-sm text-red-700">{actionError}</p>}
+        {actionError && <p role="alert" className="text-sm text-conflict">{actionError}</p>}
         <div>
           <button
             type="submit"
             disabled={addMutation.isPending || !displayName.trim() || !credentials.trim()}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#347f9d] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#286d88] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-medium text-surface transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {addMutation.isPending
               ? <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -247,19 +242,19 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
       </form>
 
       <div className="mt-7">
-        <h4 className="font-semibold text-[#38515e]">Authorized sources</h4>
+        <h4 className="font-semibold text-ink">Authorized sources</h4>
         {connectionsQuery.isPending && (
-          <p className="mt-3 text-sm text-[#82929a]">Loading project sources…</p>
+          <p className="mt-3 text-sm text-ink-2">Loading project sources…</p>
         )}
         {connectionsQuery.isError && (
-          <p role="alert" className="mt-3 text-sm text-red-700">
+          <p role="alert" className="mt-3 text-sm text-conflict">
             {connectionsQuery.error.message}
           </p>
         )}
         {connectionsQuery.isSuccess && connectionsQuery.data.length === 0 && (
-          <div className="mt-3 flex items-start gap-3 rounded-xl border border-dashed border-[#cbdfe4] bg-[#f8fbfc] p-4">
-            <CircleHelp className="mt-0.5 h-5 w-5 shrink-0 text-[#7597a3]" />
-            <p className="text-[13px] leading-6 text-[#71838d]">
+          <div className="mt-3 flex items-start gap-3 rounded-xl border border-dashed border-line-2 bg-surface p-4">
+            <CircleHelp className="mt-0.5 h-5 w-5 shrink-0 text-ink-2" />
+            <p className="text-[13px] leading-6 text-ink-2">
               No sources are authorized for this project yet. Connections added here are not shared with other client projects.
             </p>
           </div>
@@ -272,12 +267,12 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
             return (
               <article
                 key={connection.id}
-                className="rounded-xl border border-[#dfeaec] bg-white p-4"
+                className="rounded-xl border border-line bg-surface p-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <h5 className="font-semibold text-[#38515e]">{connection.displayName}</h5>
-                    <p className="mt-0.5 text-xs text-[#82929a]">
+                    <h5 className="font-semibold text-ink">{connection.displayName}</h5>
+                    <p className="mt-0.5 text-xs text-ink-2">
                       {PROVIDER_LABELS[connection.provider]} · Credential stored encrypted (not verified)
                     </p>
                   </div>
@@ -290,13 +285,13 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
                         disconnectMutation.mutate(connection.id);
                       }
                     }}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-semibold text-[#a44f49] hover:bg-[#fff4f2] disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-2 text-xs font-medium text-conflict hover:bg-subtle disabled:opacity-50"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                     Disconnect
                   </button>
                 </div>
-                <label className="mt-4 block text-sm font-medium text-slate-700">
+                <label className="mt-4 block text-sm font-medium text-ink">
                   Schema or object metadata
                   <textarea
                     value={currentMetadata}
@@ -309,11 +304,11 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
                       }))
                     }
                     placeholder="Add table/object names, fields, types, and relationships. Do not include records."
-                    className="mt-1.5 w-full resize-y rounded-lg border border-[#dce8eb] bg-[#fbfdfe] px-3 py-2.5 text-sm leading-6 outline-none focus:border-[#78afc0] focus:ring-2 focus:ring-[#e0f0f3]"
+                    className="mt-1.5 w-full resize-y rounded-md border border-line-2 bg-surface px-3 py-2.5 text-sm leading-6 outline-none focus:border-ink-3 focus:ring-2 focus:ring-fact/20"
                   />
                 </label>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                  <label className="flex items-start gap-2 text-sm text-[#4f6f7b]">
+                  <label className="flex items-start gap-2 text-sm text-ink">
                     <input
                       type="checkbox"
                       checked={connection.includeInAnalysis}
@@ -324,7 +319,7 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
                           update: { includeInAnalysis: event.target.checked },
                         })
                       }
-                      className="mt-1 accent-[#347f9d]"
+                      className="mt-1 accent-[var(--ds-ink)]"
                     />
                     Approved for System Design analysis
                   </label>
@@ -338,7 +333,7 @@ export function ProjectConnections({ projectId }: { projectId: number }) {
                           update: { metadata: currentMetadata },
                         })
                       }
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-[#cfe1e6] px-3 py-2 text-xs font-semibold text-[#347f9d] hover:bg-[#f2f9fa] disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-line-2 px-3 py-2 text-xs font-medium text-ink hover:bg-subtle disabled:opacity-50"
                     >
                       {updateMutation.isPending
                         ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" />

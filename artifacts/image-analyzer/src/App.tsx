@@ -53,49 +53,48 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "#347f9d",
-    colorForeground: "#203747",
-    colorMutedForeground: "#71838d",
-    colorDanger: "#b94d46",
-    colorBackground: "#ffffff",
-    colorInput: "#ffffff",
-    colorInputForeground: "#203747",
-    colorNeutral: "#d9e5e9",
-    fontFamily: "DM Sans, sans-serif",
-    borderRadius: "0.9rem",
+    colorPrimary: "var(--ds-ink)",
+    colorPrimaryForeground: "var(--ds-surface)",
+    colorForeground: "var(--ds-ink)",
+    colorMutedForeground: "var(--ds-ink-2)",
+    colorDanger: "var(--ds-conflict)",
+    colorBackground: "var(--ds-surface)",
+    colorInput: "var(--ds-surface)",
+    colorInputForeground: "var(--ds-ink)",
+    colorNeutral: "var(--ds-ink)",
+    colorRing: "var(--ds-ring)",
+    fontFamily: "Geist, ui-sans-serif, system-ui, sans-serif",
+    borderRadius: "0.5rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-white rounded-2xl w-[440px] max-w-full overflow-hidden shadow-[0_24px_80px_rgba(37,73,91,0.12)] border border-[#e2edf0]",
+    cardBox: "bg-surface rounded-xl w-[420px] max-w-full overflow-hidden border border-line shadow-pop",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
-    headerTitle: "text-[#203747] font-display font-semibold",
-    headerSubtitle: "text-[#71838d]",
-    socialButtonsBlockButtonText: "text-[#304954] font-medium",
-    formFieldLabel: "text-[#405762] font-medium",
-    footerActionLink: "text-[#347f9d] font-semibold",
-    footerActionText: "text-[#71838d]",
-    dividerText: "text-[#84949b]",
-    identityPreviewEditButton: "text-[#347f9d]",
-    formFieldSuccessText: "text-[#357c6f]",
-    alertText: "text-[#a6423d]",
+    footer: "!shadow-none !border-0 !bg-canvas !rounded-none",
+    headerTitle: "text-ink font-semibold tracking-[-0.02em]",
+    headerSubtitle: "text-ink-2",
+    socialButtonsBlockButton: "border-line-2 bg-surface hover:bg-subtle",
+    socialButtonsBlockButtonText: "text-ink font-medium",
+    formFieldLabel: "text-ink-2 font-medium",
+    formFieldInput: "border-line-2 bg-surface text-ink focus:border-ink-3",
+    formButtonPrimary: "bg-ink text-surface hover:opacity-85 font-medium shadow-none",
+    footerActionLink: "text-ink font-medium underline underline-offset-4",
+    footerActionText: "text-ink-2",
+    dividerText: "text-ink-3",
+    dividerLine: "bg-line",
+    identityPreviewEditButton: "text-ink",
+    formFieldSuccessText: "text-ok",
+    alertText: "text-conflict",
+    alert: "border-conflict/30 bg-conflict-bg",
+    otpCodeFieldInput: "border-line-2 text-ink",
     logoBox: "rounded-lg",
     logoImage: "rounded-lg",
-    socialButtonsBlockButton: "border-[#dce8eb] bg-white hover:bg-[#f5fafb]",
-    formButtonPrimary: "bg-[#347f9d] hover:bg-[#286d88] text-white font-semibold",
-    formFieldInput: "border-[#dce8eb] text-[#203747] focus:border-[#70aabd]",
-    footerAction: "text-[#71838d]",
-    dividerLine: "bg-[#e3ecef]",
-    alert: "border-[#f0d4d1] bg-[#fff7f6]",
-    otpCodeFieldInput: "border-[#dce8eb] text-[#203747]",
-    formFieldRow: "text-[#405762]",
-    main: "text-[#203747]",
   },
 };
 
 function SignInPage() {
   return (
-    <div className="flex min-h-[calc(100dvh-4rem)] items-center justify-center bg-transparent px-4 py-10">
+    <div className="dot-grid flex min-h-[calc(100dvh-6.25rem)] items-center justify-center px-4 py-10">
       <SignIn
         routing="path"
         path={`${basePath}/sign-in`}
@@ -107,7 +106,7 @@ function SignInPage() {
 
 function SignUpPage() {
   return (
-    <div className="flex min-h-[calc(100dvh-4rem)] items-center justify-center bg-transparent px-4 py-10">
+    <div className="dot-grid flex min-h-[calc(100dvh-6.25rem)] items-center justify-center px-4 py-10">
       <SignUp
         routing="path"
         path={`${basePath}/sign-up`}
@@ -167,13 +166,13 @@ function ClerkProviderWithRoutes() {
         signIn: {
           start: {
             title: "Welcome back",
-            subtitle: "Sign in to access your client projects",
+            subtitle: "Sign in to open your client projects",
           },
         },
         signUp: {
           start: {
             title: "Create your account",
-            subtitle: "Keep every client project in its own workspace",
+            subtitle: "Keep each client’s findings in its own project",
           },
         },
       }}

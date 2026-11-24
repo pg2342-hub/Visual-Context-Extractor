@@ -1,3 +1,6 @@
-<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="180" height="180" rx="36" fill="#FF3C00"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <style>.b{fill:#171717}.f{stroke:#fff}@media (prefers-color-scheme: dark){.b{fill:#ededed}.f{stroke:#0a0a0a}}</style>
+  <rect class="b" width="64" height="64" rx="14"/>
+  <rect class="f" x="15" y="19" width="30" height="26" rx="4" stroke-width="3.5"/>
+  <circle cx="45" cy="19" r="7" fill="#0068d6"/>
 </svg>

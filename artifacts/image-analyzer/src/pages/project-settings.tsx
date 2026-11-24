@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Link, useLocation, useRoute } from "wouter";
+import { Link, useLocation, useRoute, useSearch } from "wouter";
 import { useUser } from "@clerk/react";
-import { Activity, ArrowLeft, BookOpenText, Cable, Check, FolderKanban, LoaderCircle, Save, Settings2 } from "lucide-react";
+import { Check } from "lucide-react";
+import { Spinner } from "@/components/marks";
+import { ProjectAvatar } from "@/components/app-header";
 import { useProjects } from "@/components/project-context";
 import { ProjectDocuments } from "@/components/project-documents";
 import { ProjectConnections } from "@/components/project-connections";
@@ -38,7 +40,9 @@ export default function ProjectSettingsPage() {
     queryProject ??
     (selectedProject?.id === projectId ? selectedProject : null);
   const [, setLocation] = useLocation();
-  const [section, setSection] = useState<SettingsSection>("details");
+  const search = useSearch();
+  const requested = new URLSearchParams(search).get("tab");
+  const section: SettingsSection = requested === "knowledge" || requested === "integrations" || requested === "memory" ? requested : "details";
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [knowledge, setKnowledge] = useState("");
@@ -96,176 +100,147 @@ export default function ProjectSettingsPage() {
   };
 
   if (!isLoaded || (isSignedIn && isLoading)) {
-    return <SettingsFrame><div className="space-y-4"><div className="h-8 w-60 animate-pulse rounded-lg bg-[#e8f1f3]" /><div className="h-64 animate-pulse rounded-[22px] border border-[#e4edef] bg-white/70" /></div></SettingsFrame>;
+    return <SettingsFrame><div className="space-y-4"><div className="h-8 w-60 animate-pulse rounded-md bg-subtle" /><div className="h-64 animate-pulse rounded-xl bg-subtle" /></div></SettingsFrame>;
   }
   if (!isSignedIn) {
     return (
       <SettingsFrame>
-        <div className="rounded-[22px] border border-[#dfeaec] bg-white/85 p-8 text-center shadow-[0_16px_44px_rgba(40,74,91,.06)]">
-          <h2 className="font-display text-xl font-semibold tracking-[-.035em] text-[#263f4d]">Sign in to manage this project</h2>
-          <Link href="/sign-in" className="mt-4 inline-flex rounded-lg bg-[#347f9d] px-4 py-2.5 text-sm font-semibold text-white no-underline">
-            Sign in
-          </Link>
+        <div className="mx-auto max-w-md rounded-xl border border-line bg-surface p-8 text-center shadow-card">
+          <h1 className="text-[18px] font-semibold text-ink">Sign in to open this project</h1>
+          <p className="mt-1 text-[14px] text-ink-2">Client projects are private to your account.</p>
+          <Link href="/sign-in" className="mt-5 inline-flex h-9 items-center rounded-md bg-ink px-4 text-[14px] font-medium text-surface no-underline hover:opacity-85">Sign in</Link>
         </div>
       </SettingsFrame>
     );
   }
   if (error) {
-    return <SettingsFrame><p role="alert" className="text-sm text-red-700">{error.message}</p></SettingsFrame>;
+    return <SettingsFrame><p role="alert" className="text-[14px] text-conflict">{error.message}</p></SettingsFrame>;
   }
   if (!project || !Number.isInteger(projectId)) {
     return (
       <SettingsFrame>
-        <p className="text-[#71838d]">This project isn’t available in your workspace.</p>
-        <Link href="/projects" className="mt-4 inline-flex text-sm font-semibold text-[#347f9d] no-underline">Back to client projects</Link>
+        <h1 className="text-[20px] font-semibold text-ink">Project not found</h1>
+        <p className="mt-1 text-[14px] text-ink-2">It may have been deleted, or it belongs to another account.</p>
+        <Link href="/projects" className="mt-4 inline-flex h-9 items-center rounded-md border border-line-2 px-3 text-[14px] font-medium text-ink no-underline hover:bg-subtle">All client projects</Link>
       </SettingsFrame>
     );
   }
 
-  const sections: { id: SettingsSection; label: string; icon: typeof Settings2 }[] = [
-    { id: "details", label: "Project details", icon: Settings2 },
-    { id: "knowledge", label: "Knowledge", icon: BookOpenText },
-    { id: "memory", label: "History & findings", icon: Activity },
-    { id: "integrations", label: "Integrations", icon: Cable },
-  ];
+  const showSave = section === "details" || section === "knowledge";
+  const inputClass = "mt-1.5 w-full rounded-md border border-line-2 bg-surface px-3 text-[14px] text-ink outline-none transition-colors focus:border-ink-3 focus:ring-2 focus:ring-fact/20";
 
   return (
-    <SettingsFrame>
-      <Link href="/projects" className="mb-7 inline-flex items-center gap-2 text-[13px] font-medium text-[#71838d] no-underline hover:text-[#294957]">
-        <ArrowLeft className="h-4 w-4" />
-        All client projects
-      </Link>
-
-      <div className="mb-7">
-        <p className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.18em] text-[#568da0]">
-          <FolderKanban className="h-4 w-4" />
-          Client project
-        </p>
-        <h2 className="font-display text-3xl font-semibold tracking-[-.05em] text-[#243d4b]">{project.name}</h2>
-        <p className="mt-2 max-w-2xl text-[14px] leading-6 text-[#71838d]">
-          Project settings stay with this client and are used when this project is selected in the top bar.
-        </p>
+    <>
+      <div className="border-b border-line bg-surface">
+        <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-4 px-4 py-8 sm:px-6 lg:px-10">
+          <ProjectAvatar name={project.name} className="h-10 w-10" />
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-[28px] font-semibold leading-tight tracking-[-0.035em] text-ink">{project.name}</h1>
+            <p className="mt-0.5 line-clamp-1 text-[14px] text-ink-2">{project.description || "No description yet. Add one in Settings."}</p>
+          </div>
+          <Link href="/" className="inline-flex h-9 items-center rounded-md bg-ink px-4 text-[14px] font-medium text-surface no-underline hover:opacity-85">New analysis</Link>
+        </div>
       </div>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-7">
-        <nav aria-label="Project settings" className="flex gap-2 overflow-x-auto rounded-[17px] border border-[#dfeaec] bg-white/75 p-2 lg:flex-col">
-          {sections.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => setSection(id)}
-              aria-current={section === id ? "page" : undefined}
-              className={`flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition ${
-                section === id ? "bg-[#eaf5f7] text-[#286b83]" : "text-[#71838d] hover:bg-[#f5f9fa]"
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </button>
-          ))}
-        </nav>
+      <SettingsFrame>
+        {section === "details" && (
+          <div className="grid gap-6">
+            <section className="overflow-hidden rounded-xl border border-line bg-surface shadow-card">
+              <div className="p-5 sm:p-6">
+                <h2 className="text-[20px] font-semibold tracking-[-0.025em] text-ink">Project details</h2>
+                <p className="mt-0.5 text-[14px] text-ink-2">How this client appears in the project switcher.</p>
+                <div className="mt-5 grid max-w-2xl gap-5">
+                  <label className="text-[13px] font-medium text-ink-2">
+                    Project name
+                    <input value={name} maxLength={120} onChange={(event) => setName(event.target.value)} className={`${inputClass} h-10`} />
+                  </label>
+                  <label className="text-[13px] font-medium text-ink-2">
+                    Description
+                    <textarea value={description} maxLength={2000} rows={3} onChange={(event) => setDescription(event.target.value)} placeholder="Client goals, scope, or background" className={`${inputClass} resize-y py-2 leading-6`} />
+                  </label>
+                </div>
+              </div>
+              {renderSaveBar()}
+            </section>
 
-        <section className="min-w-0 rounded-[22px] border border-[#dfeaec] bg-white/85 p-5 shadow-[0_12px_34px_rgba(39,75,95,.045)] sm:p-8">
-          {section === "details" && (
-            <div className="max-w-2xl">
-              <h3 className="font-display text-xl font-semibold tracking-[-.035em] text-[#2b4654]">Project details</h3>
-              <p className="mt-1 text-[13px] text-[#82929a]">Identify this client project and its scope.</p>
-              <div className="mt-6 grid gap-5">
-                <label className="text-sm font-medium text-slate-700">
-                  Project name
-                  <input
-                    value={name}
-                    maxLength={120}
-                    onChange={(event) => setName(event.target.value)}
-                    className="mt-1.5 h-11 w-full rounded-lg border border-[#dce8eb] bg-white px-3 outline-none transition focus:border-[#78afc0] focus:ring-2 focus:ring-[#e0f0f3]"
-                  />
-                </label>
-                <label className="text-sm font-medium text-slate-700">
-                  Description
+            <section className="overflow-hidden rounded-xl border border-conflict/30 bg-surface shadow-card">
+              <div className="p-5 sm:p-6">
+                <h2 className="text-[16px] font-semibold text-ink">Delete project</h2>
+                <p className="mt-0.5 max-w-[68ch] text-[14px] text-ink-2">Permanently removes {project.name}, its knowledge, documents, connected systems, findings and analysis runs. This can’t be undone.</p>
+              </div>
+              <div className="flex justify-end border-t border-conflict/20 bg-conflict-bg px-5 py-3 sm:px-6">
+                <button type="button" onClick={() => void removeProject()} className="inline-flex h-8 items-center rounded-md bg-conflict px-3 text-[13px] font-medium text-white hover:opacity-90 dark:text-black">
+                  Delete project
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {section === "knowledge" && (
+          <div className="grid gap-6">
+            <section className="overflow-hidden rounded-xl border border-line bg-surface shadow-card">
+              <div className="p-5 sm:p-6">
+                <h2 className="text-[20px] font-semibold tracking-[-0.025em] text-ink">Project notes</h2>
+                <p className="mt-0.5 max-w-[68ch] text-[14px] text-ink-2">
+                  What you already know about this client. Notes are given to every analysis as background, and the model is told to keep them apart from what the images show.
+                </p>
+                <label className="mt-5 block text-[13px] font-medium text-ink-2">
+                  <span className="sr-only">Notes for analysis</span>
                   <textarea
-                    value={description}
-                    maxLength={2000}
-                    rows={4}
-                    onChange={(event) => setDescription(event.target.value)}
-                    placeholder="Client goals, scope, or background"
-                    className="mt-1.5 w-full resize-y rounded-lg border border-[#dce8eb] bg-white px-3 py-2.5 outline-none transition focus:border-[#78afc0] focus:ring-2 focus:ring-[#e0f0f3]"
+                    value={knowledge}
+                    maxLength={30000}
+                    rows={14}
+                    onChange={(event) => setKnowledge(event.target.value)}
+                    placeholder={"Business goals and terminology\nKnown systems and what each one does\nConstraints and confirmed assumptions\nQuestions the client has already answered"}
+                    className={`${inputClass} resize-y bg-canvas py-3 font-mono text-[13px] leading-6`}
                   />
+                  <span className="mt-1.5 block text-right font-mono text-[12px] font-normal text-ink-3">
+                    {knowledge.length.toLocaleString()} / 30,000
+                  </span>
                 </label>
               </div>
-            </div>
-          )}
-
-          {section === "knowledge" && (
-            <div className="max-w-3xl">
-              <h3 className="flex items-center gap-2 font-display text-xl font-semibold tracking-[-.035em] text-[#2b4654]">
-                <BookOpenText className="h-5 w-5 text-blue-700" />
-                Project knowledge
-              </h3>
-              <p className="mt-1 text-[13px] leading-6 text-[#82929a]">
-                Add client-specific facts the analyzer should use as background when this project is selected.
-              </p>
-              <label className="mt-6 block text-sm font-medium text-slate-700">
-                Notes for analysis
-                <textarea
-                  value={knowledge}
-                  maxLength={30000}
-                  rows={14}
-                  onChange={(event) => setKnowledge(event.target.value)}
-                  placeholder={"Examples:\n• Business goals and terminology\n• Known systems and their roles\n• Constraints or confirmed assumptions\n• Questions the client has already answered"}
-                  className="mt-1.5 w-full resize-y rounded-lg border border-[#dce8eb] bg-[#fbfdfe] px-3 py-3 font-mono text-sm leading-6 outline-none transition focus:border-[#78afc0] focus:ring-2 focus:ring-[#e0f0f3]"
-                />
-                <span className="mt-1 block text-right text-xs font-normal text-slate-400">
-                  {knowledge.length.toLocaleString()} / 30,000 characters
-                </span>
-              </label>
-              <p className="mt-4 rounded-xl border border-[#dcebef] bg-[#f2f9fa] px-4 py-3 text-[13px] leading-6 text-[#4f6f7b]">
-                When this client project is active, these notes are included as reference context in image analysis. The analyzer is instructed to distinguish notes from what is actually visible in the image.
-              </p>
+              {renderSaveBar()}
+            </section>
+            <section className="rounded-xl border border-line bg-surface p-5 shadow-card sm:p-6">
               <ProjectDocuments projectId={projectId} />
-            </div>
-          )}
-
-          {section === "integrations" && (
-            <ProjectConnections projectId={projectId} />
-          )}
-
-          {section === "memory" && <ProjectMemory projectId={projectId} />}
-
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[#e8eff1] pt-5">
-            <button
-              type="button"
-              onClick={() => void removeProject()}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-[#a44f49] transition hover:bg-[#fff4f2]"
-            >
-              Delete project
-            </button>
-            <div className="flex items-center gap-3">
-              {saveMutation.isError && (
-                <span role="alert" className="max-w-xs text-sm text-red-700">
-                  {saveMutation.error.message}
-                </span>
-              )}
-              {saved && <span className="inline-flex items-center gap-1 text-sm text-emerald-700"><Check className="h-4 w-4" />Saved</span>}
-              <button
-                type="button"
-                onClick={() => saveMutation.mutate()}
-                disabled={!isDirty || saveMutation.isPending || !name.trim()}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#347f9d] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#286d88] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {saveMutation.isPending ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                {saveMutation.isPending ? "Saving…" : "Save settings"}
-              </button>
-            </div>
+            </section>
           </div>
-        </section>
-      </div>
-    </SettingsFrame>
+        )}
+
+        {section === "integrations" && <ProjectConnections projectId={projectId} />}
+
+        {section === "memory" && <ProjectMemory projectId={projectId} />}
+      </SettingsFrame>
+    </>
   );
+
+  function renderSaveBar() {
+    if (!showSave) return null;
+    return (
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-canvas px-5 py-3 sm:px-6">
+        <p className="text-[13px] text-ink-2">
+          {saveMutation.isError ? <span role="alert" className="text-conflict">{saveMutation.error.message}</span>
+            : saved ? <span className="inline-flex items-center gap-1 text-ok"><Check className="h-3.5 w-3.5" />Saved</span>
+            : isDirty ? "You have unsaved changes." : "All changes saved."}
+        </p>
+        <button
+          type="button"
+          onClick={() => saveMutation.mutate()}
+          disabled={!isDirty || saveMutation.isPending || !name.trim()}
+          className="inline-flex h-8 items-center gap-2 rounded-md bg-ink px-3 text-[13px] font-medium text-surface transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          {saveMutation.isPending && <Spinner className="h-3.5 w-3.5" />}
+          {saveMutation.isPending ? "Saving…" : "Save"}
+        </button>
+      </div>
+    );
+  }
 }
 
 function SettingsFrame({ children }: { children: React.ReactNode }) {
   return (
-    <main className="mx-auto min-h-[calc(100dvh-4.4rem)] max-w-[1150px] px-4 py-10 sm:px-8 md:py-14">
+    <main className="mx-auto w-full max-w-[1200px] px-4 pb-24 pt-8 sm:px-6 lg:px-10">
       {children}
     </main>
   );
