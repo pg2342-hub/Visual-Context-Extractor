@@ -31,6 +31,8 @@ export function MarkedImage({
   className,
   imgClassName,
   onFocusFinding,
+  onOpen,
+  large = false,
 }: {
   src: string;
   alt: string;
@@ -41,6 +43,10 @@ export function MarkedImage({
   className?: string;
   imgClassName?: string;
   onFocusFinding?: (id: number | null) => void;
+  /** Called when the image itself (not a mark) is clicked, to open the expanded view. */
+  onOpen?: () => void;
+  /** Bigger marks and thicker outlines for the expanded view. */
+  large?: boolean;
 }) {
   const imgRef = useRef<HTMLImageElement>(null);
   const [rect, setRect] = useState<Rect | null>(null);
@@ -67,7 +73,7 @@ export function MarkedImage({
   const anyActive = active.length > 0;
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative', onOpen && 'cursor-zoom-in', className)} onClick={onOpen}>
       <img ref={imgRef} src={src} alt={alt} className={cn('transition-opacity', dimmed && 'opacity-60', imgClassName)} />
 
       {rect && placed.length > 0 && (
@@ -79,7 +85,8 @@ export function MarkedImage({
               <div
                 key={key}
                 className={cn(
-                  'absolute rounded-[4px] border-[1.5px] transition-[opacity,box-shadow] duration-200',
+                  'absolute rounded-[4px] transition-[opacity,box-shadow] duration-200',
+                  large ? 'border-2' : 'border-[1.5px]',
                   tone[finding.type],
                   finding.type === 'conflict' && 'border-dashed',
                   finding.type === 'open_question' && 'border-dotted',
@@ -107,9 +114,13 @@ export function MarkedImage({
                   onMouseLeave={() => onFocusFinding?.(null)}
                   onFocus={() => onFocusFinding?.(finding.id)}
                   onBlur={() => onFocusFinding?.(null)}
-                  onClick={() => document.getElementById(`finding-${finding.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    const target = document.getElementById(`viewer-finding-${finding.id}`) ?? document.getElementById(`finding-${finding.id}`);
+                    target?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                  }}
                 >
-                  <FindingMark type={finding.type} n={n} muted={done && !on} className="drop-shadow-sm" />
+                  <FindingMark type={finding.type} n={n} muted={done && !on} className={cn('drop-shadow-sm', large && 'scale-[1.2]')} />
                 </button>
               </div>
             );
@@ -118,7 +129,11 @@ export function MarkedImage({
       )}
 
       {unplaced.length > 0 && (
-        <div className="absolute right-2.5 top-2.5 flex flex-wrap justify-end gap-1" title="These findings cite the whole image">
+        <div
+          className="absolute flex flex-wrap justify-end gap-1"
+          style={rect ? { left: rect.left, top: rect.top + 8, width: rect.width - 8 } : { right: 10, top: 10 }}
+          title="These findings cite the whole image"
+        >
           {unplaced.map(({ finding, n }) => (
             <span
               key={finding.id}

@@ -99,7 +99,7 @@ export default function Home() {
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-conflict" />
                 <div>
                   <p className="text-[14px] font-medium text-ink">The analysis didn’t finish</p>
-                  <p className="mt-0.5 text-[13px] text-ink-2">{analyzeMutation.error.message}. Try again, or remove any very large images first.</p>
+                  <p className="mt-0.5 text-[13px] text-ink-2">{analyzeMutation.error.message.replace(/[.\s]+$/, "")}. Try again, or remove any very large images first.</p>
                 </div>
               </motion.div>
             )}

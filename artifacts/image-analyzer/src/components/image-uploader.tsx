@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { ImagePlus, Plus, X } from 'lucide-react';
+import { ImagePlus, Maximize2, Plus, X } from 'lucide-react';
 import type { ProjectFinding } from '@workspace/api-client-react';
 import { cn, isValidImageType } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Spinner } from '@/components/marks';
 import { MarkedImage } from '@/components/marked-image';
+import { ImageViewer } from '@/components/image-viewer';
 import type { AnalysisMode } from '@/hooks/use-analyze';
 
 export const MODES: { value: AnalysisMode; label: string; short: string; description: string; action: string }[] = [
@@ -112,6 +113,7 @@ export function ImageUploader({
     return () => window.removeEventListener('paste', handlePaste);
   }, [onImagesSelected, isAnalyzing]);
 
+  const [viewing, setViewing] = useState<number | null>(null);
   const urls = useMemo(() => selectedFiles.map((file) => URL.createObjectURL(file)), [selectedFiles]);
   useEffect(() => () => urls.forEach((url) => URL.revokeObjectURL(url)), [urls]);
 
@@ -187,6 +189,7 @@ export function ImageUploader({
                       active={activeFinding !== null ? [activeFinding] : []}
                       dimmed={isAnalyzing}
                       onFocusFinding={onFocusFinding}
+                      onOpen={() => setViewing(idx)}
                       className={single ? 'w-full' : 'h-full w-full'}
                       imgClassName={cn('block w-full object-contain', single ? 'max-h-[560px]' : 'h-full')}
                     />
@@ -199,6 +202,15 @@ export function ImageUploader({
                   <figcaption className="flex items-center gap-2 border-t border-line px-3 py-2">
                     <span className="rounded-full border border-line-2 px-2 font-mono text-[11.5px] leading-5 text-ink">{ref}</span>
                     <span className="min-w-0 flex-1 truncate text-[13px] text-ink-2">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setViewing(idx)}
+                      aria-label={`Expand ${file.name}`}
+                      title="Expand"
+                      className="grid h-6 w-6 place-items-center rounded-md text-ink-3 transition-colors hover:bg-subtle hover:text-ink"
+                    >
+                      <Maximize2 className="h-3.5 w-3.5" />
+                    </button>
                     {!isAnalyzing && (
                       <button
                         type="button"
@@ -236,6 +248,13 @@ export function ImageUploader({
           </div>
         </>
       )}
+      <ImageViewer
+        images={selectedFiles.map((file, idx) => ({ src: urls[idx], name: file.name, imageRef: `IMG-${idx + 1}` }))}
+        findings={findings}
+        index={viewing}
+        onIndexChange={setViewing}
+        onClose={() => setViewing(null)}
+      />
     </section>
   );
 }
